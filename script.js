@@ -169,7 +169,7 @@ logoutBtn.addEventListener('click', handleLogout);
 // Initialize Google Sign-In
 window.onload = function() {
     google.accounts.id.initialize({
-        client_id: '949628622191-4r5f5j5d5d5d5d5d5d5d5d5d5d5d5d5d.apps.googleusercontent.com',
+        client_id: '275823790253-l5skr26eicv7091ntu8g3g35i07jn93n.apps.googleusercontent.com',
         callback: handleCredentialResponse
     });
     google.accounts.id.renderButton(
