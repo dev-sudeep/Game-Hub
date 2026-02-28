@@ -38,9 +38,9 @@
                     <button class="play-btn">Play</button>
                 </div>
                 
-                <div class="game-card" id="ludoCard">
-                    <h2>Ludo</h2>
-                    <p class="game-description">Race your pieces to home. First to finish wins!</p>
+                <div class="game-card" id="chessCard">
+                    <h2>Chess</h2>
+                    <p class="game-description">Two-player strategy game. Checkmate your opponent!</p>
                     <button class="play-btn">Play</button>
                 </div>
             </div>
@@ -74,77 +74,26 @@
         <button class="reset-btn" id="tictactoeResetBtn">Reset Game</button>
     </div>
 
-    <!-- Ludo Setup Page -->
-    <div id="ludoSetupPage" class="game-container hidden">
+    <!-- Chess Game Page -->
+    <div id="chessGamePage" class="game-container hidden">
         <div class="game-header">
-            <button class="back-btn" id="backFromLudoSetup">← Back</button>
-            <h1>Ludo Setup</h1>
-            <div style="width: 60px;"></div>
-        </div>
-        
-        <div class="setup-content">
-            <p class="setup-subtitle">Select number of players</p>
-            
-            <div class="player-selection">
-                <button class="player-btn" data-players="2">
-                    <span class="player-count">2 Players</span>
-                    <span class="player-names">Blue & Red</span>
-                </button>
-                
-                <button class="player-btn" data-players="3">
-                    <span class="player-count">3 Players</span>
-                    <span class="player-names">Blue, Yellow & Red</span>
-                </button>
-                
-                <button class="player-btn" data-players="4">
-                    <span class="player-count">4 Players</span>
-                    <span class="player-names">Blue, Yellow, Red & Green</span>
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Ludo Game Page -->
-    <div id="ludoGamePage" class="game-container hidden">
-        <div class="game-header">
-            <button class="back-btn" id="backFromLudo">← Back</button>
-            <h1>Ludo</h1>
+            <button class="back-btn" id="backFromChess">← Back</button>
+            <h1>Chess</h1>
             <button class="logout-btn" id="logoutBtn4">Logout</button>
         </div>
         
-        <div class="ludo-container">
-            <div class="ludo-info">
-                <p id="ludoStatus">Player 1 (Blue) - Roll the dice!</p>
-                <button class="dice-btn" id="diceBtn">Roll Dice</button>
-                <div class="dice-display" id="diceDisplay">
-                    <div class="dice" id="dice">
-                        <div class="dice-face"></div>
-                    </div>
-                </div>
+        <div class="chess-container">
+            <div class="chess-info">
+                <p id="chessStatus">White's Turn</p>
+                <button class="reset-btn" id="chessResetBtn">Reset Game</button>
             </div>
             
-            <div class="ludo-board" id="ludoBoard"></div>
+            <div class="chess-board" id="chessBoard"></div>
             
-            <div class="ludo-pieces">
-                <div class="player-pieces" id="player1Container">
-                    <h3 style="color: #2c5282;">● Player 1 (Blue)</h3>
-                    <div class="pieces" id="player1Pieces"></div>
-                </div>
-                <div class="player-pieces" id="player2Container">
-                    <h3 style="color: #c53030;">● Player 2 (Red)</h3>
-                    <div class="pieces" id="player2Pieces"></div>
-                </div>
-                <div class="player-pieces hidden" id="player3Container">
-                    <h3 style="color: #d69e2e;">● Player 3 (Yellow)</h3>
-                    <div class="pieces" id="player3Pieces"></div>
-                </div>
-                <div class="player-pieces hidden" id="player4Container">
-                    <h3 style="color: #22863a;">● Player 4 (Green)</h3>
-                    <div class="pieces" id="player4Pieces"></div>
-                </div>
+            <div class="chess-legend">
+                <p><strong>White (Bottom)</strong> vs <strong>Black (Top)</strong></p>
+                <p id="chessMoveLog"></p>
             </div>
-            
-            <button class="reset-btn" id="ludoResetBtn">Reset Game</button>
         </div>
     </div>
     

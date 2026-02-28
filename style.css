@@ -262,8 +262,8 @@ body {
     cursor: not-allowed;
 }
 
-/* Ludo Styles */
-.ludo-container {
+/* Chess Styles */
+.chess-container {
     width: 100%;
     display: flex;
     flex-direction: column;
@@ -271,171 +271,98 @@ body {
     gap: 20px;
 }
 
-.ludo-info {
+.chess-info {
     text-align: center;
     width: 100%;
 }
 
-#ludoStatus {
-    display: block;
+#chessStatus {
+    font-size: 1.25rem;
+    color: #555;
+    font-weight: 500;
     margin-bottom: 15px;
 }
 
-.dice-btn {
-    background-color: #ed8936;
-    color: white;
-    border: none;
-    padding: 12px 32px;
-    font-size: 1.1rem;
-    font-weight: 600;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-    margin-bottom: 15px;
-}
-
-.dice-btn:hover {
-    background-color: #dd6b20;
-}
-
-.dice-display {
-    display: flex;
-    justify-content: center;
-    margin: 15px 0;
-    height: 80px;
-}
-
-.dice {
-    width: 80px;
-    height: 80px;
-    background: white;
-    border: 3px solid #333;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-.dice-face {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-    width: 60px;
-    height: 60px;
-}
-
-.dice-dot {
-    width: 8px;
-    height: 8px;
-    background: #333;
-    border-radius: 50%;
-}
-
-.dice-dot.hidden {
-    background: transparent;
-}
-
-.ludo-board {
+.chess-board {
     width: 100%;
-    max-width: 450px;
+    max-width: 500px;
     aspect-ratio: 1;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 8px;
-    position: relative;
     display: grid;
     grid-template-columns: repeat(8, 1fr);
-    gap: 1px;
-    padding: 5px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-.board-square {
-    background-color: rgba(255, 255, 255, 0.2);
-    border-radius: 2px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-    min-height: 50px;
-    font-size: 0.7rem;
-    color: rgba(255, 255, 255, 0.5);
-}
-
-.board-square.home {
-    background: rgba(255, 255, 255, 0.1);
-}
-
-.ludo-pieces {
-    width: 100%;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
-}
-
-.player-pieces {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.player-pieces h3 {
-    margin-bottom: 15px;
-    color: #333;
-    font-size: 1rem;
-}
-
-.pieces {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-}
-
-.piece {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    font-weight: bold;
-    color: white;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-}
-
-.piece:hover {
-    transform: scale(1.15);
+    gap: 0;
+    background-color: #8b7355;
+    border: 3px solid #333;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
-.piece.blue {
-    background: linear-gradient(135deg, #2c5282 0%, #1a365d 100%);
+.chess-square {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: clamp(1.5rem, 5vw, 2.5rem);
+    font-weight: bold;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s ease;
 }
 
-.piece.red {
-    background: linear-gradient(135deg, #c53030 0%, #742a2a 100%);
+.chess-square.light {
+    background-color: #f0d9b5;
 }
 
-.piece.yellow {
-    background: linear-gradient(135deg, #d69e2e 0%, #7c2d12 100%);
+.chess-square.dark {
+    background-color: #b58863;
 }
 
-.piece.green {
-    background: linear-gradient(135deg, #22863a 0%, #0d3416 100%);
+.chess-square.selected {
+    background-color: #baca44;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
 }
 
-.piece.finished {
-    background: linear-gradient(135deg, #48bb78 0%, #22543d 100%);
-    box-shadow: 0 0 12px rgba(72, 187, 120, 0.6);
+.chess-square.legal-move {
+    position: relative;
 }
 
-.piece.active {
-    border: 2px solid gold;
-    box-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+.chess-square.legal-move::after {
+    content: '';
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background-color: rgba(100, 200, 100, 0.6);
+    border-radius: 50%;
+}
+
+.chess-square:hover {
+    opacity: 0.9;
+}
+
+.chess-piece {
+    cursor: move;
+    user-select: none;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+    transition: transform 0.1s ease;
+}
+
+.chess-piece:hover {
+    transform: scale(1.1);
+}
+
+.chess-legend {
+    text-align: center;
+    width: 100%;
+    color: #555;
+}
+
+.chess-legend p {
+    margin: 5px 0;
+    font-size: 0.9rem;
+}
+
+#chessMoveLog {
+    margin-top: 10px;
+    color: #888;
+    font-size: 0.85rem;
+    min-height: 20px;
 }
 
 /* Ludo Setup Styles */

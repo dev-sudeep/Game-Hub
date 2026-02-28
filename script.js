@@ -22,40 +22,26 @@ const WIN_CONDITIONS = [
     [2, 4, 6]
 ];
 
-// === LUDO STATE ===
-let ludoGameActive = false;
-let ludoCurrentPlayer = 1;
-let ludoLastDice = 0;
-let ludoNumPlayers = 2;
-let ludoPieces = {
-    player1: [
-        { id: 1, position: -1, finished: false },
-        { id: 2, position: -1, finished: false },
-        { id: 3, position: -1, finished: false },
-        { id: 4, position: -1, finished: false }
-    ],
-    player2: [
-        { id: 5, position: -1, finished: false },
-        { id: 6, position: -1, finished: false },
-        { id: 7, position: -1, finished: false },
-        { id: 8, position: -1, finished: false }
-    ],
-    player3: [
-        { id: 9, position: -1, finished: false },
-        { id: 10, position: -1, finished: false },
-        { id: 11, position: -1, finished: false },
-        { id: 12, position: -1, finished: false }
-    ],
-    player4: [
-        { id: 13, position: -1, finished: false },
-        { id: 14, position: -1, finished: false },
-        { id: 15, position: -1, finished: false },
-        { id: 16, position: -1, finished: false }
-    ]
-};
+// === CHESS STATE ===
+let chessBoard = [
+    ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'],
+    ['p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'],
+    ['.', '.', '.', '.', '.', '.', '.', '.'],
+    ['.', '.', '.', '.', '.', '.', '.', '.'],
+    ['.', '.', '.', '.', '.', '.', '.', '.'],
+    ['.', '.', '.', '.', '.', '.', '.', '.'],
+    ['P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'],
+    ['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R']
+];
 
-const PLAYER_COLORS = ['blue', 'red', 'yellow', 'green'];
-const PLAYER_NAMES = ['Blue', 'Red', 'Yellow', 'Green'];
+let chessWhiteToMove = true;
+let chessSelectedSquare = null;
+let chessMoves = [];
+
+const PIECE_UNICODE = {
+    'K': '♔', 'Q': '♕', 'R': '♖', 'B': '♗', 'N': '♘', 'P': '♙',
+    'k': '♚', 'q': '♛', 'r': '♜', 'b': '♝', 'n': '♞', 'p': '♟'
+};
 
 // DOM elements
 const loginPage = document.getElementById('loginPage');
@@ -70,20 +56,18 @@ const cells = document.querySelectorAll('.cell');
 const statusDisplay = document.getElementById('tictactoeStatus');
 const tictactoeResetBtn = document.getElementById('tictactoeResetBtn');
 
-const ludoStatusDisplay = document.getElementById('ludoStatus');
-const diceBtnElement = document.getElementById('diceBtn');
-const diceDisplay = document.getElementById('diceDisplay');
-const ludoResetBtn = document.getElementById('ludoResetBtn');
+const chessStatusDisplay = document.getElementById('chessStatus');
+const chessResetBtn = document.getElementById('chessResetBtn');
+const chessMoveLog = document.getElementById('chessMoveLog');
 
 const backFromTictactoeBtn = document.getElementById('backFromTictactoe');
-const backFromLudoBtn = document.getElementById('backFromLudo');
-const backFromLudoSetupBtn = document.getElementById('backFromLudoSetup');
+const backFromChessBtn = document.getElementById('backFromChess');
 
 const logoutBtn2 = document.getElementById('logoutBtn2');
 const logoutBtn3 = document.getElementById('logoutBtn3');
 const logoutBtn4 = document.getElementById('logoutBtn4');
 
-const ludoSetupPage = document.getElementById('ludoSetupPage');
+const chessGamePage = document.getElementById('chessGamePage');
 
 // Google Sign-In callback
 function handleCredentialResponse(response) {
@@ -117,6 +101,9 @@ function handleLogout() {
 }
 
 // === GAME SELECTION ===
+const ludoCard = document.getElementById('chessCard');
+const chessCard = document.getElementById('chessCard');
+
 tictactoeCard.addEventListener('click', function() {
     currentGame = 'tictactoe';
     gameSelectionPage.classList.add('hidden');
@@ -124,10 +111,18 @@ tictactoeCard.addEventListener('click', function() {
     initializeTictactoe();
 });
 
-ludoCard.addEventListener('click', function() {
-    currentGame = 'ludo';
+chessCard.addEventListener('click', function() {
+    currentGame = 'chess';
     gameSelectionPage.classList.add('hidden');
-    ludoSetupPage.classList.remove('hidden');
+    chessGamePage.classList.remove('hidden');
+    initializeChess();
+});
+
+ludoCard.addEventListener('click', function() {
+    currentGame = 'chess';
+    gameSelectionPage.classList.add('hidden');
+    chessGamePage.classList.remove('hidden');
+    initializeChess();
 });
 
 // === TIC TAC TOE FUNCTIONS ===
@@ -213,193 +208,118 @@ function resetTictactoe() {
     initializeTictactoe();
 }
 
-// === LUDO FUNCTIONS ===
-function initializeLudo() {
-    ludoGameActive = true;
-    ludoCurrentPlayer = 1;
-    ludoLastDice = 0;
-    
-    ludoPieces = {
-        player1: [
-            { id: 1, position: -1, finished: false },
-            { id: 2, position: -1, finished: false },
-            { id: 3, position: -1, finished: false },
-            { id: 4, position: -1, finished: false }
-        ],
-        player2: [
-            { id: 5, position: -1, finished: false },
-            { id: 6, position: -1, finished: false },
-            { id: 7, position: -1, finished: false },
-            { id: 8, position: -1, finished: false }
-        ],
-        player3: [
-            { id: 9, position: -1, finished: false },
-            { id: 10, position: -1, finished: false },
-            { id: 11, position: -1, finished: false },
-            { id: 12, position: -1, finished: false }
-        ],
-        player4: [
-            { id: 13, position: -1, finished: false },
-            { id: 14, position: -1, finished: false },
-            { id: 15, position: -1, finished: false },
-            { id: 16, position: -1, finished: false }
-        ]
-    };
-    
-    renderLudoBoard();
-    renderLudoPieces();
-    updateLudoStatus();
-    diceBtnElement.disabled = false;
+// === CHESS FUNCTIONS ===
+function initializeChess() {
+    chessBoard = [
+        ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'],
+        ['p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'],
+        ['.', '.', '.', '.', '.', '.', '.', '.'],
+        ['.', '.', '.', '.', '.', '.', '.', '.'],
+        ['.', '.', '.', '.', '.', '.', '.', '.'],
+        ['.', '.', '.', '.', '.', '.', '.', '.'],
+        ['P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'],
+        ['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R']
+    ];
+    chessWhiteToMove = true;
+    chessSelectedSquare = null;
+    chessMoves = [];
+    renderChessBoard();
+    updateChessStatus();
 }
 
-function renderLudoBoard() {
-    const board = document.getElementById('ludoBoard');
+function renderChessBoard() {
+    const board = document.getElementById('chessBoard');
     board.innerHTML = '';
     
-    for (let i = 0; i < 64; i++) {
-        const square = document.createElement('div');
-        square.className = 'board-square';
-        if (i % 8 === 0 || i % 8 === 7) {
-            square.classList.add('home');
+    for (let row = 0; row < 8; row++) {
+        for (let col = 0; col < 8; col++) {
+            const square = document.createElement('div');
+            const isLight = (row + col) % 2 === 0;
+            square.className = `chess-square ${isLight ? 'light' : 'dark'}`;
+            
+            const piece = chessBoard[row][col];
+            if (piece !== '.') {
+                square.textContent = PIECE_UNICODE[piece] || piece;
+            }
+            
+            square.addEventListener('click', () => handleChessClick(row, col));
+            board.appendChild(square);
         }
-        board.appendChild(square);
     }
 }
 
-function renderLudoPieces() {
-    for (let p = 1; p <= 4; p++) {
-        const containerId = `player${p}Container`;
-        const piecesId = `player${p}Pieces`;
-        const playerKey = `player${p}`;
+function handleChessClick(row, col) {
+    if (chessSelectedSquare) {
+        const [fromRow, fromCol] = chessSelectedSquare;
+        const piece = chessBoard[fromRow][fromCol];
+        const targetPiece = chessBoard[row][col];
         
-        const container = document.getElementById(containerId);
-        const piecesContainer = document.getElementById(piecesId);
-        
-        if (p <= ludoNumPlayers) {
-            container.classList.remove('hidden');
-        } else {
-            container.classList.add('hidden');
-            continue;
+        // Check if it's a valid move
+        if (fromRow === row && fromCol === col) {
+            chessSelectedSquare = null;
+            renderChessBoard();
+            return;
         }
         
-        piecesContainer.innerHTML = '';
+        // Simple move validation (same color capture check)
+        const isWhitePiece = piece === piece.toUpperCase();
+        const isTargetWhite = targetPiece !== '.' && targetPiece === targetPiece.toUpperCase();
         
-        ludoPieces[playerKey].forEach(piece => {
-            const pieceEl = document.createElement('div');
-            pieceEl.className = `piece ${PLAYER_COLORS[p - 1]} ${piece.finished ? 'finished' : ''}`;
-            pieceEl.textContent = piece.id;
-            pieceEl.addEventListener('click', () => selectLudoPiece(playerKey, piece.id));
-            piecesContainer.appendChild(pieceEl);
-        });
-    }
-}
-
-function drawDice(value) {
-    const diceEl = document.getElementById('dice');
-    diceEl.innerHTML = '';
-    
-    const faceEl = document.createElement('div');
-    faceEl.className = 'dice-face';
-    
-    // Dice dot positions for each number (1-6)
-    const dotPositions = {
-        1: [4],
-        2: [0, 8],
-        3: [0, 4, 8],
-        4: [0, 2, 6, 8],
-        5: [0, 2, 4, 6, 8],
-        6: [0, 1, 2, 6, 7, 8]
-    };
-    
-    const positions = dotPositions[value] || [];
-    
-    for (let i = 0; i < 9; i++) {
-        const dot = document.createElement('div');
-        dot.className = 'dice-dot';
-        if (!positions.includes(i)) {
-            dot.classList.add('hidden');
+        if (chessWhiteToMove !== isWhitePiece) {
+            chessSelectedSquare = null;
+            renderChessBoard();
+            return;
         }
-        faceEl.appendChild(dot);
-    }
-    
-    diceEl.appendChild(faceEl);
-}
-
-function rollDice() {
-    diceBtnElement.disabled = true;
-    ludoLastDice = Math.floor(Math.random() * 6) + 1;
-    
-    // Animate dice roll
-    let rollCount = 0;
-    const rollInterval = setInterval(() => {
-        drawDice(Math.floor(Math.random() * 6) + 1);
-        rollCount++;
-        if (rollCount > 10) {
-            clearInterval(rollInterval);
-            drawDice(ludoLastDice);
-            updateLudoStatus();
-            diceBtnElement.disabled = false;
+        
+        if (targetPiece !== '.' && isWhitePiece === isTargetWhite) {
+            chessSelectedSquare = null;
+            renderChessBoard();
+            return;
         }
-    }, 50);
-}
-
-function selectLudoPiece(playerKey, pieceId) {
-    const playerNum = parseInt(playerKey.replace('player', ''));
-    
-    if (playerNum !== ludoCurrentPlayer || ludoLastDice === 0) return;
-    
-    const piece = ludoPieces[playerKey].find(p => p.id === pieceId);
-    
-    if (piece.finished) return;
-    
-    // Move logic
-    if (piece.position === -1 && ludoLastDice === 6) {
-        piece.position = 0;
-    } else if (piece.position !== -1 && ludoLastDice === 6) {
-        piece.position += ludoLastDice;
-        if (piece.position >= 52) {
-            piece.finished = true;
-            piece.position = 52;
-        }
-    } else if (piece.position !== -1) {
-        piece.position += ludoLastDice;
-        if (piece.position >= 52) {
-            piece.finished = true;
-            piece.position = 52;
-        }
-    }
-    
-    // Check if player finished
-    const playerPieces = ludoPieces[playerKey];
-    const allFinished = playerPieces.every(p => p.finished);
-    
-    if (allFinished) {
-        ludoStatusDisplay.textContent = `🎉 Player ${playerNum} (${PLAYER_NAMES[playerNum - 1]}) wins! 🎉`;
-        ludoGameActive = false;
-        diceBtnElement.disabled = true;
+        
+        // Make the move
+        chessBoard[row][col] = piece;
+        chessBoard[fromRow][fromCol] = '.';
+        chessWhiteToMove = !chessWhiteToMove;
+        chessSelectedSquare = null;
+        
+        chessMoves.push(`${String.fromCharCode(97 + fromCol)}${8 - fromRow} to ${String.fromCharCode(97 + col)}${8 - row}`);
+        updateChessStatus();
+        renderChessBoard();
     } else {
-        // Switch player
-        ludoCurrentPlayer = ludoCurrentPlayer === ludoNumPlayers ? 1 : ludoCurrentPlayer + 1;
-        ludoLastDice = 0;
-        updateLudoStatus();
+        const piece = chessBoard[row][col];
+        if (piece !== '.') {
+            const isWhitePiece = piece === piece.toUpperCase();
+            if (chessWhiteToMove === isWhitePiece) {
+                chessSelectedSquare = [row, col];
+                renderChessBoard();
+                highlightSelectedSquare();
+            }
+        }
     }
-    
-    renderLudoPieces();
 }
 
-function updateLudoStatus() {
-    if (!ludoGameActive) return;
-    ludoStatusDisplay.textContent = `Player ${ludoCurrentPlayer} (${PLAYER_NAMES[ludoCurrentPlayer - 1]}) - Roll the dice!`;
-    drawDice(ludoLastDice);
+function highlightSelectedSquare() {
+    if (!chessSelectedSquare) return;
+    const [row, col] = chessSelectedSquare;
+    const index = row * 8 + col;
+    const squares = document.querySelectorAll('.chess-square');
+    squares[index].classList.add('selected');
 }
 
-function resetLudo() {
-    initializeLudo();
+function updateChessStatus() {
+    chessStatusDisplay.textContent = chessWhiteToMove ? '♔ White\'s Turn' : '♚ Black\'s Turn';
+    if (chessMoves.length > 0) {
+        chessMoveLog.textContent = `Last move: ${chessMoves[chessMoves.length - 1]}`;
+    }
 }
+
+function resetChess() {
+    initializeChess();
+}
+// Event listeners
 tictactoeResetBtn.addEventListener('click', resetTictactoe);
-ludoResetBtn.addEventListener('click', resetLudo);
-
-diceBtnElement.addEventListener('click', rollDice);
+chessResetBtn.addEventListener('click', resetChess);
 
 backFromTictactoeBtn.addEventListener('click', function() {
     currentGame = null;
@@ -407,26 +327,10 @@ backFromTictactoeBtn.addEventListener('click', function() {
     gameSelectionPage.classList.remove('hidden');
 });
 
-backFromLudoBtn.addEventListener('click', function() {
+backFromChessBtn.addEventListener('click', function() {
     currentGame = null;
-    ludoGamePage.classList.add('hidden');
+    chessGamePage.classList.add('hidden');
     gameSelectionPage.classList.remove('hidden');
-});
-
-backFromLudoSetupBtn.addEventListener('click', function() {
-    currentGame = null;
-    ludoSetupPage.classList.add('hidden');
-    gameSelectionPage.classList.remove('hidden');
-});
-
-// Player selection for Ludo
-document.querySelectorAll('.player-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-        ludoNumPlayers = parseInt(this.dataset.players);
-        ludoSetupPage.classList.add('hidden');
-        ludoGamePage.classList.remove('hidden');
-        initializeLudo();
-    });
 });
 
 logoutBtn2.addEventListener('click', handleLogout);
