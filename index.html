@@ -5,10 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tic Tac Toe</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
-    <div class="container">
-        <h1>Tic Tac Toe</h1>
+    <!-- Login Page -->
+    <div id="loginPage" class="login-container">
+        <div class="login-box">
+            <h1>Tic Tac Toe</h1>
+            <p class="login-subtitle">Two-Player Pass & Play</p>
+            
+            <div class="login-content">
+                <p class="login-text">Sign in with Google to play</p>
+                <div id="g_id_signin" class="g_id_signin"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Page -->
+    <div id="gamePage" class="game-container hidden">
+        <div class="game-header">
+            <h1>Tic Tac Toe</h1>
+            <div class="user-info">
+                <span id="userName"></span>
+                <button id="logoutBtn" class="logout-btn">Logout</button>
+            </div>
+        </div>
         
         <div class="status">
             <p id="status">Player X's turn</p>

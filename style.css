@@ -14,7 +14,52 @@ body {
     padding: 20px;
 }
 
-.container {
+/* Login Page Styles */
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    width: 100%;
+}
+
+.login-box {
+    background: white;
+    padding: 50px 40px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+}
+
+.login-box h1 {
+    font-size: 2.5rem;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.login-subtitle {
+    color: #888;
+    font-size: 0.95rem;
+    margin-bottom: 40px;
+}
+
+.login-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+}
+
+.login-text {
+    color: #555;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+/* Game Page Styles */
+.game-container {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -23,10 +68,46 @@ body {
     width: 100%;
 }
 
-h1 {
+.game-header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.game-header h1 {
     font-size: 2.5rem;
     color: #333;
-    text-align: center;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    font-size: 0.95rem;
+    color: #555;
+}
+
+.logout-btn {
+    background-color: #e53e3e;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.logout-btn:hover {
+    background-color: #c53030;
+}
+
+/* Hidden state */
+.hidden {
+    display: none !important;
 }
 
 .status {
@@ -112,7 +193,16 @@ h1 {
 
 /* Responsive adjustments */
 @media (max-width: 480px) {
-    h1 {
+    .login-box {
+        padding: 40px 25px;
+    }
+
+    .game-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .game-header h1 {
         font-size: 2rem;
     }
 
@@ -120,7 +210,7 @@ h1 {
         font-size: 1.1rem;
     }
 
-    .container {
+    .game-container {
         gap: 20px;
     }
 

@@ -1,3 +1,7 @@
+// Auth state
+let isLoggedIn = false;
+let currentUser = null;
+
 // Game state
 let board = Array(9).fill('');
 let currentPlayer = 'X';
@@ -16,18 +20,66 @@ const WIN_CONDITIONS = [
 ];
 
 // DOM elements
+const loginPage = document.getElementById('loginPage');
+const gamePage = document.getElementById('gamePage');
 const cells = document.querySelectorAll('.cell');
 const statusDisplay = document.getElementById('status');
 const resetBtn = document.getElementById('resetBtn');
+const logoutBtn = document.getElementById('logoutBtn');
+const userNameDisplay = document.getElementById('userName');
 const boardElement = document.getElementById('board');
 
-// Initialize event listeners
-cells.forEach(cell => {
-    cell.addEventListener('click', handleCellClick);
-});
-resetBtn.addEventListener('click', resetGame);
+// Google Sign-In callback
+function handleCredentialResponse(response) {
+    // Decode JWT token to get user info
+    const base64Url = response.credential.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+
+    const userInfo = JSON.parse(jsonPayload);
+    
+    // Set logged in state
+    isLoggedIn = true;
+    currentUser = userInfo;
+    
+    // Update UI
+    userNameDisplay.textContent = `Hello, ${userInfo.name}`;
+    loginPage.classList.add('hidden');
+    gamePage.classList.remove('hidden');
+    
+    // Initialize game
+    initializeGame();
+}
+
+// Logout handler
+function handleLogout() {
+    isLoggedIn = false;
+    currentUser = null;
+    
+    // Reset game
+    resetGame();
+    
+    // Update UI
+    loginPage.classList.remove('hidden');
+    gamePage.classList.add('hidden');
+    userNameDisplay.textContent = '';
+    
+    // Clear Google sign-in
+    google.accounts.id.disableAutoSelect();
+}
+
+// Initialize game event listeners
+function initializeGame() {
+    cells.forEach(cell => {
+        cell.addEventListener('click', handleCellClick);
+    });
+}
 
 function handleCellClick(e) {
+    if (!isLoggedIn) return;
+    
     const cell = e.target;
     const index = cell.dataset.index;
 
@@ -109,3 +161,19 @@ function resetGame() {
 
     statusDisplay.textContent = `Player ${currentPlayer}'s turn`;
 }
+
+// Event listeners
+resetBtn.addEventListener('click', resetGame);
+logoutBtn.addEventListener('click', handleLogout);
+
+// Initialize Google Sign-In
+window.onload = function() {
+    google.accounts.id.initialize({
+        client_id: '949628622191-4r5f5j5d5d5d5d5d5d5d5d5d5d5d5d5d.apps.googleusercontent.com',
+        callback: handleCredentialResponse
+    });
+    google.accounts.id.renderButton(
+        document.querySelector('.g_id_signin'),
+        { theme: 'outline', size: 'large' }
+    );
+};
