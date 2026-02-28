@@ -142,7 +142,7 @@ body {
 .cell {
     background-color: #fafafa;
     border: 2px solid #ddd;
-    border-radius: 4px;
+    border-radius: 0px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -151,6 +151,7 @@ body {
     cursor: pointer;
     color: #333;
     transition: all 0.2s ease;
+    aspect-ratio: 1;
 }
 
 .cell:hover:not(.disabled) {
