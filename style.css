@@ -286,9 +286,10 @@ body {
 .chess-board {
     width: 100%;
     max-width: 500px;
-    aspect-ratio: 1;
+    height: 500px;
     display: grid;
     grid-template-columns: repeat(8, 1fr);
+    grid-template-rows: repeat(8, 1fr);
     gap: 0;
     background-color: #8b7355;
     border: 3px solid #333;
@@ -299,11 +300,13 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: clamp(1.5rem, 5vw, 2.5rem);
+    font-size: 2rem;
     font-weight: bold;
     cursor: pointer;
     position: relative;
     transition: all 0.2s ease;
+    min-width: 0;
+    min-height: 0;
 }
 
 .chess-square.light {
