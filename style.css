@@ -74,11 +74,14 @@ body {
     justify-content: space-between;
     align-items: center;
     gap: 20px;
+    flex-wrap: nowrap;
 }
 
 .game-header h1 {
     font-size: 2.5rem;
     color: #333;
+    flex-shrink: 0;
+    margin: 0;
 }
 
 .user-info {
@@ -87,6 +90,8 @@ body {
     gap: 15px;
     font-size: 0.95rem;
     color: #555;
+    flex-shrink: 0;
+    white-space: nowrap;
 }
 
 .logout-btn {
