@@ -26,6 +26,7 @@ const WIN_CONDITIONS = [
 let ludoGameActive = false;
 let ludoCurrentPlayer = 1;
 let ludoLastDice = 0;
+let ludoNumPlayers = 2;
 let ludoPieces = {
     player1: [
         { id: 1, position: -1, finished: false },
@@ -38,8 +39,23 @@ let ludoPieces = {
         { id: 6, position: -1, finished: false },
         { id: 7, position: -1, finished: false },
         { id: 8, position: -1, finished: false }
+    ],
+    player3: [
+        { id: 9, position: -1, finished: false },
+        { id: 10, position: -1, finished: false },
+        { id: 11, position: -1, finished: false },
+        { id: 12, position: -1, finished: false }
+    ],
+    player4: [
+        { id: 13, position: -1, finished: false },
+        { id: 14, position: -1, finished: false },
+        { id: 15, position: -1, finished: false },
+        { id: 16, position: -1, finished: false }
     ]
 };
+
+const PLAYER_COLORS = ['blue', 'red', 'yellow', 'green'];
+const PLAYER_NAMES = ['Blue', 'Red', 'Yellow', 'Green'];
 
 // DOM elements
 const loginPage = document.getElementById('loginPage');
@@ -56,15 +72,18 @@ const tictactoeResetBtn = document.getElementById('tictactoeResetBtn');
 
 const ludoStatusDisplay = document.getElementById('ludoStatus');
 const diceBtnElement = document.getElementById('diceBtn');
-const diceResultDisplay = document.getElementById('diceResult');
+const diceDisplay = document.getElementById('diceDisplay');
 const ludoResetBtn = document.getElementById('ludoResetBtn');
 
 const backFromTictactoeBtn = document.getElementById('backFromTictactoe');
 const backFromLudoBtn = document.getElementById('backFromLudo');
+const backFromLudoSetupBtn = document.getElementById('backFromLudoSetup');
 
 const logoutBtn2 = document.getElementById('logoutBtn2');
 const logoutBtn3 = document.getElementById('logoutBtn3');
 const logoutBtn4 = document.getElementById('logoutBtn4');
+
+const ludoSetupPage = document.getElementById('ludoSetupPage');
 
 // Google Sign-In callback
 function handleCredentialResponse(response) {
@@ -108,8 +127,7 @@ tictactoeCard.addEventListener('click', function() {
 ludoCard.addEventListener('click', function() {
     currentGame = 'ludo';
     gameSelectionPage.classList.add('hidden');
-    ludoGamePage.classList.remove('hidden');
-    initializeLudo();
+    ludoSetupPage.classList.remove('hidden');
 });
 
 // === TIC TAC TOE FUNCTIONS ===
@@ -200,6 +218,7 @@ function initializeLudo() {
     ludoGameActive = true;
     ludoCurrentPlayer = 1;
     ludoLastDice = 0;
+    
     ludoPieces = {
         player1: [
             { id: 1, position: -1, finished: false },
@@ -212,61 +231,120 @@ function initializeLudo() {
             { id: 6, position: -1, finished: false },
             { id: 7, position: -1, finished: false },
             { id: 8, position: -1, finished: false }
+        ],
+        player3: [
+            { id: 9, position: -1, finished: false },
+            { id: 10, position: -1, finished: false },
+            { id: 11, position: -1, finished: false },
+            { id: 12, position: -1, finished: false }
+        ],
+        player4: [
+            { id: 13, position: -1, finished: false },
+            { id: 14, position: -1, finished: false },
+            { id: 15, position: -1, finished: false },
+            { id: 16, position: -1, finished: false }
         ]
     };
     
     renderLudoBoard();
     renderLudoPieces();
-    ludoStatusDisplay.textContent = 'Player 1 (Blue) - Roll the dice!';
-    diceResultDisplay.textContent = '';
+    updateLudoStatus();
+    diceBtnElement.disabled = false;
 }
 
 function renderLudoBoard() {
     const board = document.getElementById('ludoBoard');
     board.innerHTML = '';
     
-    for (let i = 0; i < 36; i++) {
+    for (let i = 0; i < 64; i++) {
         const square = document.createElement('div');
         square.className = 'board-square';
-        square.textContent = i + 1;
+        if (i % 8 === 0 || i % 8 === 7) {
+            square.classList.add('home');
+        }
         board.appendChild(square);
     }
 }
 
 function renderLudoPieces() {
-    const player1Pieces = document.getElementById('player1Pieces');
-    const player2Pieces = document.getElementById('player2Pieces');
+    for (let p = 1; p <= 4; p++) {
+        const containerId = `player${p}Container`;
+        const piecesId = `player${p}Pieces`;
+        const playerKey = `player${p}`;
+        
+        const container = document.getElementById(containerId);
+        const piecesContainer = document.getElementById(piecesId);
+        
+        if (p <= ludoNumPlayers) {
+            container.classList.remove('hidden');
+        } else {
+            container.classList.add('hidden');
+            continue;
+        }
+        
+        piecesContainer.innerHTML = '';
+        
+        ludoPieces[playerKey].forEach(piece => {
+            const pieceEl = document.createElement('div');
+            pieceEl.className = `piece ${PLAYER_COLORS[p - 1]} ${piece.finished ? 'finished' : ''}`;
+            pieceEl.textContent = piece.id;
+            pieceEl.addEventListener('click', () => selectLudoPiece(playerKey, piece.id));
+            piecesContainer.appendChild(pieceEl);
+        });
+    }
+}
+
+function drawDice(value) {
+    const diceEl = document.getElementById('dice');
+    diceEl.innerHTML = '';
     
-    player1Pieces.innerHTML = '';
-    player2Pieces.innerHTML = '';
+    const faceEl = document.createElement('div');
+    faceEl.className = 'dice-face';
     
-    ludoPieces.player1.forEach(piece => {
-        const pieceEl = document.createElement('div');
-        pieceEl.className = `piece blue ${piece.finished ? 'finished' : ''}`;
-        pieceEl.textContent = piece.id;
-        pieceEl.addEventListener('click', () => selectLudoPiece('player1', piece.id));
-        player1Pieces.appendChild(pieceEl);
-    });
+    // Dice dot positions for each number (1-6)
+    const dotPositions = {
+        1: [4],
+        2: [0, 8],
+        3: [0, 4, 8],
+        4: [0, 2, 6, 8],
+        5: [0, 2, 4, 6, 8],
+        6: [0, 1, 2, 6, 7, 8]
+    };
     
-    ludoPieces.player2.forEach(piece => {
-        const pieceEl = document.createElement('div');
-        pieceEl.className = `piece red ${piece.finished ? 'finished' : ''}`;
-        pieceEl.textContent = piece.id;
-        pieceEl.addEventListener('click', () => selectLudoPiece('player2', piece.id));
-        player2Pieces.appendChild(pieceEl);
-    });
+    const positions = dotPositions[value] || [];
+    
+    for (let i = 0; i < 9; i++) {
+        const dot = document.createElement('div');
+        dot.className = 'dice-dot';
+        if (!positions.includes(i)) {
+            dot.classList.add('hidden');
+        }
+        faceEl.appendChild(dot);
+    }
+    
+    diceEl.appendChild(faceEl);
 }
 
 function rollDice() {
+    diceBtnElement.disabled = true;
     ludoLastDice = Math.floor(Math.random() * 6) + 1;
-    diceResultDisplay.textContent = `Dice: ${ludoLastDice}`;
     
-    ludoStatusDisplay.textContent = `Player ${ludoCurrentPlayer} rolled ${ludoLastDice}. Select a piece to move!`;
+    // Animate dice roll
+    let rollCount = 0;
+    const rollInterval = setInterval(() => {
+        drawDice(Math.floor(Math.random() * 6) + 1);
+        rollCount++;
+        if (rollCount > 10) {
+            clearInterval(rollInterval);
+            drawDice(ludoLastDice);
+            updateLudoStatus();
+            diceBtnElement.disabled = false;
+        }
+    }, 50);
 }
 
-function selectLudoPiece(player, pieceId) {
-    const playerKey = player === 'player1' ? 'player1' : 'player2';
-    const playerNum = player === 'player1' ? 1 : 2;
+function selectLudoPiece(playerKey, pieceId) {
+    const playerNum = parseInt(playerKey.replace('player', ''));
     
     if (playerNum !== ludoCurrentPlayer || ludoLastDice === 0) return;
     
@@ -277,36 +355,46 @@ function selectLudoPiece(player, pieceId) {
     // Move logic
     if (piece.position === -1 && ludoLastDice === 6) {
         piece.position = 0;
+    } else if (piece.position !== -1 && ludoLastDice === 6) {
+        piece.position += ludoLastDice;
+        if (piece.position >= 52) {
+            piece.finished = true;
+            piece.position = 52;
+        }
     } else if (piece.position !== -1) {
         piece.position += ludoLastDice;
-        if (piece.position >= 36) {
+        if (piece.position >= 52) {
             piece.finished = true;
-            piece.position = 36;
+            piece.position = 52;
         }
     }
     
-    // Check if player 1 or 2 finished
+    // Check if player finished
     const playerPieces = ludoPieces[playerKey];
     const allFinished = playerPieces.every(p => p.finished);
     
     if (allFinished) {
-        ludoStatusDisplay.textContent = `Player ${playerNum} (${playerNum === 1 ? 'Blue' : 'Red'}) wins!`;
+        ludoStatusDisplay.textContent = `🎉 Player ${playerNum} (${PLAYER_NAMES[playerNum - 1]}) wins! 🎉`;
         ludoGameActive = false;
         diceBtnElement.disabled = true;
     } else {
         // Switch player
-        ludoCurrentPlayer = ludoCurrentPlayer === 1 ? 2 : 1;
+        ludoCurrentPlayer = ludoCurrentPlayer === ludoNumPlayers ? 1 : ludoCurrentPlayer + 1;
         ludoLastDice = 0;
-        diceResultDisplay.textContent = '';
-        ludoStatusDisplay.textContent = `Player ${ludoCurrentPlayer} (${ludoCurrentPlayer === 1 ? 'Blue' : 'Red'}) - Roll the dice!`;
+        updateLudoStatus();
     }
     
     renderLudoPieces();
 }
 
+function updateLudoStatus() {
+    if (!ludoGameActive) return;
+    ludoStatusDisplay.textContent = `Player ${ludoCurrentPlayer} (${PLAYER_NAMES[ludoCurrentPlayer - 1]}) - Roll the dice!`;
+    drawDice(ludoLastDice);
+}
+
 function resetLudo() {
     initializeLudo();
-    diceBtnElement.disabled = false;
 }
 tictactoeResetBtn.addEventListener('click', resetTictactoe);
 ludoResetBtn.addEventListener('click', resetLudo);
@@ -323,6 +411,22 @@ backFromLudoBtn.addEventListener('click', function() {
     currentGame = null;
     ludoGamePage.classList.add('hidden');
     gameSelectionPage.classList.remove('hidden');
+});
+
+backFromLudoSetupBtn.addEventListener('click', function() {
+    currentGame = null;
+    ludoSetupPage.classList.add('hidden');
+    gameSelectionPage.classList.remove('hidden');
+});
+
+// Player selection for Ludo
+document.querySelectorAll('.player-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        ludoNumPlayers = parseInt(this.dataset.players);
+        ludoSetupPage.classList.add('hidden');
+        ludoGamePage.classList.remove('hidden');
+        initializeLudo();
+    });
 });
 
 logoutBtn2.addEventListener('click', handleLogout);
