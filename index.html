@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tic Tac Toe</title>
+    <title>Game Hub</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
@@ -11,8 +11,8 @@
     <!-- Login Page -->
     <div id="loginPage" class="login-container">
         <div class="login-box">
-            <h1>Tic Tac Toe</h1>
-            <p class="login-subtitle">Two-Player Pass & Play</p>
+            <h1>Game Hub</h1>
+            <p class="login-subtitle">Play with Friends</p>
             
             <div class="login-content">
                 <p class="login-text">Sign in with Google to play</p>
@@ -21,18 +21,42 @@
         </div>
     </div>
 
-    <!-- Game Page -->
-    <div id="gamePage" class="game-container hidden">
-        <div class="game-header">
-            <h1>Tic Tac Toe</h1>
-            <div class="user-info">
-                <span id="userName"></span>
-                <button id="logoutBtn" class="logout-btn">Logout</button>
+    <!-- Game Selection Page -->
+    <div id="gameSelectionPage" class="game-selection-container hidden">
+        <div class="selection-box">
+            <div class="selection-header">
+                <h1>Game Hub</h1>
+                <button id="logoutBtn2" class="logout-btn">Logout</button>
             </div>
+            
+            <p class="selection-subtitle">Choose a game to play</p>
+            
+            <div class="games-grid">
+                <div class="game-card" id="tictactoeCard">
+                    <h2>Tic Tac Toe</h2>
+                    <p class="game-description">3x3 grid. Get 3 in a row to win!</p>
+                    <button class="play-btn">Play</button>
+                </div>
+                
+                <div class="game-card" id="ludoCard">
+                    <h2>Ludo</h2>
+                    <p class="game-description">Race your pieces to home. First to finish wins!</p>
+                    <button class="play-btn">Play</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tic Tac Toe Game Page -->
+    <div id="tictactoeGamePage" class="game-container hidden">
+        <div class="game-header">
+            <button class="back-btn" id="backFromTictactoe">← Back</button>
+            <h1>Tic Tac Toe</h1>
+            <button class="logout-btn" id="logoutBtn3">Logout</button>
         </div>
         
         <div class="status">
-            <p id="status">Player X's turn</p>
+            <p id="tictactoeStatus">Player X's turn</p>
         </div>
         
         <div class="board" id="board">
@@ -47,7 +71,39 @@
             <div class="cell" data-index="8"></div>
         </div>
         
-        <button class="reset-btn" id="resetBtn">Reset Game</button>
+        <button class="reset-btn" id="tictactoeResetBtn">Reset Game</button>
+    </div>
+
+    <!-- Ludo Game Page -->
+    <div id="ludoGamePage" class="game-container hidden">
+        <div class="game-header">
+            <button class="back-btn" id="backFromLudo">← Back</button>
+            <h1>Ludo</h1>
+            <button class="logout-btn" id="logoutBtn4">Logout</button>
+        </div>
+        
+        <div class="ludo-container">
+            <div class="ludo-info">
+                <p id="ludoStatus">Player 1 (Blue) - Roll the dice!</p>
+                <button class="dice-btn" id="diceBtn">Roll Dice</button>
+                <p id="diceResult"></p>
+            </div>
+            
+            <div class="ludo-board" id="ludoBoard"></div>
+            
+            <div class="ludo-pieces">
+                <div class="player-pieces">
+                    <h3>Player 1 (Blue)</h3>
+                    <div class="pieces" id="player1Pieces"></div>
+                </div>
+                <div class="player-pieces">
+                    <h3>Player 2 (Red)</h3>
+                    <div class="pieces" id="player2Pieces"></div>
+                </div>
+            </div>
+            
+            <button class="reset-btn" id="ludoResetBtn">Reset Game</button>
+        </div>
     </div>
     
     <script src="script.js"></script>
