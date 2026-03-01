@@ -31,7 +31,7 @@ let chessBoard = [
 let chessWhiteToMove = true;
 let chessSelectedSquare = null;
 let chessMoves = [];
-let lastMove = null; // Fixed: changed colon to semicolon
+let lastMove = null;
 let castlingRights = { wK: true, wQ: true, bK: true, bQ: true };
 
 const PIECE_UNICODE = {
@@ -63,7 +63,6 @@ const logoutBtn2 = document.getElementById('logoutBtn2');
 const logoutBtn3 = document.getElementById('logoutBtn3');
 const logoutBtn4 = document.getElementById('logoutBtn4');
 
-// Guest Login Event Listener
 const guestLoginBtn = document.getElementById('guestLoginBtn');
 const guestNameInput = document.getElementById('guestName');
 
@@ -101,7 +100,6 @@ function handleLogout() {
     if (window.google) google.accounts.id.disableAutoSelect();
 }
 
-// === GAME SELECTION ===
 tictactoeCard.addEventListener('click', function() {
     currentGame = 'tictactoe';
     gameSelectionPage.classList.add('hidden');
@@ -224,7 +222,6 @@ function isPathClear(fromR, fromC, toR, toC) {
     return true;
 }
 
-
 function isValidPawnMove(fromR, fromC, toR, toC, piece) {
     const isWhite = piece === piece.toUpperCase();
     const dir = isWhite ? -1 : 1;
@@ -292,6 +289,7 @@ function isMoveLegal(fR, fC, tR, tC) {
     const kingPos = (() => {
         for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) if (chessBoard[r][c] === (isWhite ? 'K' : 'k')) return [r, c];
     })();
+    if (!kingPos) { chessBoard[fR][fC] = moving; chessBoard[tR][tC] = original; return true; }
     const inCheck = isSquareAttackedByColor(kingPos[0], kingPos[1], !isWhite);
     chessBoard[fR][fC] = moving; chessBoard[tR][tC] = original;
     return !inCheck;
@@ -317,6 +315,14 @@ function handleChessClick(row, col) {
             if (isCastling) {
                 const rookC = col > fC ? 7 : 0, nextC = col > fC ? col - 1 : col + 1;
                 chessBoard[row][nextC] = chessBoard[row][rookC]; chessBoard[row][rookC] = '.';
+            }
+
+            // --- PAWN PROMOTION ---
+            if (p.toLowerCase() === 'p' && (row === 0 || row === 7)) {
+                let choice = prompt("Pawn Promotion! Enter Q for Queen, R for Rook, B for Bishop, or N for Knight:");
+                if (choice) choice = choice.toUpperCase();
+                if (!['Q', 'R', 'B', 'N'].includes(choice)) choice = 'Q'; // Default to Queen
+                chessBoard[row][col] = isWhite ? choice : choice.toLowerCase();
             }
 
             // Update Rights
