@@ -10,16 +10,10 @@ let board = Array(9).fill('');
 let currentPlayer = 'X';
 let gameActive = true;
 
-// Win combinations
 const WIN_CONDITIONS = [
-    [0, 1, 2],
-    [3, 4, 5],
-    [6, 7, 8],
-    [0, 3, 6],
-    [1, 4, 7],
-    [2, 5, 8],
-    [0, 4, 8],
-    [2, 4, 6]
+    [0, 1, 2], [3, 4, 5], [6, 7, 8],
+    [0, 3, 6], [1, 4, 7], [2, 5, 8],
+    [0, 4, 8], [2, 4, 6]
 ];
 
 // === CHESS STATE ===
@@ -37,6 +31,8 @@ let chessBoard = [
 let chessWhiteToMove = true;
 let chessSelectedSquare = null;
 let chessMoves = [];
+let lastMove = null; // Fixed: changed colon to semicolon
+let castlingRights = { wK: true, wQ: true, bK: true, bQ: true };
 
 const PIECE_UNICODE = {
     'K': '♔', 'Q': '♕', 'R': '♖', 'B': '♗', 'N': '♘', 'P': '♙',
@@ -47,10 +43,10 @@ const PIECE_UNICODE = {
 const loginPage = document.getElementById('loginPage');
 const gameSelectionPage = document.getElementById('gameSelectionPage');
 const tictactoeGamePage = document.getElementById('tictactoeGamePage');
-const ludoGamePage = document.getElementById('ludoGamePage');
+const chessGamePage = document.getElementById('chessGamePage');
 
 const tictactoeCard = document.getElementById('tictactoeCard');
-const ludoCard = document.getElementById('ludoCard');
+const chessCard = document.getElementById('chessCard');
 
 const cells = document.querySelectorAll('.cell');
 const statusDisplay = document.getElementById('tictactoeStatus');
@@ -67,9 +63,20 @@ const logoutBtn2 = document.getElementById('logoutBtn2');
 const logoutBtn3 = document.getElementById('logoutBtn3');
 const logoutBtn4 = document.getElementById('logoutBtn4');
 
-const chessGamePage = document.getElementById('chessGamePage');
+// Guest Login Event Listener
+const guestLoginBtn = document.getElementById('guestLoginBtn');
+const guestNameInput = document.getElementById('guestName');
 
-// Google Sign-In callback
+if (guestLoginBtn) {
+    guestLoginBtn.addEventListener('click', function() {
+        const name = guestNameInput.value.trim() || 'Guest Player';
+        isLoggedIn = true;
+        currentUser = { name: name, isGuest: true };
+        loginPage.classList.add('hidden');
+        gameSelectionPage.classList.remove('hidden');
+    });
+}
+
 function handleCredentialResponse(response) {
     const base64Url = response.credential.split('.')[1];
     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -77,32 +84,24 @@ function handleCredentialResponse(response) {
         return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
     }).join(''));
 
-    const userInfo = JSON.parse(jsonPayload);
-    
+    currentUser = JSON.parse(jsonPayload);
     isLoggedIn = true;
-    currentUser = userInfo;
-    
     loginPage.classList.add('hidden');
     gameSelectionPage.classList.remove('hidden');
 }
 
-// Logout handler
 function handleLogout() {
     isLoggedIn = false;
     currentUser = null;
     currentGame = null;
-    
     loginPage.classList.remove('hidden');
     gameSelectionPage.classList.add('hidden');
     tictactoeGamePage.classList.add('hidden');
     chessGamePage.classList.add('hidden');
-    
-    google.accounts.id.disableAutoSelect();
+    if (window.google) google.accounts.id.disableAutoSelect();
 }
 
 // === GAME SELECTION ===
-const chessCard = document.getElementById('chessCard');
-
 tictactoeCard.addEventListener('click', function() {
     currentGame = 'tictactoe';
     gameSelectionPage.classList.add('hidden');
@@ -122,25 +121,19 @@ function initializeTictactoe() {
     board = Array(9).fill('');
     currentPlayer = 'X';
     gameActive = true;
-    
     cells.forEach(cell => {
         cell.textContent = '';
         cell.classList.remove('x', 'o', 'winner', 'disabled');
         cell.addEventListener('click', handleCellClick);
     });
-    
     statusDisplay.textContent = `Player X's turn`;
 }
 
 function handleCellClick(e) {
     if (!isLoggedIn || currentGame !== 'tictactoe') return;
-    
     const cell = e.target;
     const index = cell.dataset.index;
-
-    if (board[index] !== '' || !gameActive) {
-        return;
-    }
+    if (board[index] !== '' || !gameActive) return;
 
     board[index] = currentPlayer;
     cell.textContent = currentPlayer;
@@ -155,50 +148,34 @@ function handleCellClick(e) {
         return;
     }
 
-    if (checkDraw()) {
+    if (board.every(cell => cell !== '')) {
         gameActive = false;
         statusDisplay.textContent = 'Draw';
         disableBoard();
         return;
     }
 
-    switchPlayer();
-}
-
-function checkWin() {
-    for (let i = 0; i < WIN_CONDITIONS.length; i++) {
-        const [a, b, c] = WIN_CONDITIONS[i];
-        if (board[a] && board[a] === board[b] && board[a] === board[c]) {
-            return [a, b, c];
-        }
-    }
-    return null;
-}
-
-function checkDraw() {
-    return board.every(cell => cell !== '');
-}
-
-function switchPlayer() {
     currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
     statusDisplay.textContent = `Player ${currentPlayer}'s turn`;
 }
 
-function highlightWinningCells(winIndices) {
-    winIndices.forEach(index => {
-        cells[index].classList.add('winner');
-    });
+function checkWin() {
+    for (let condition of WIN_CONDITIONS) {
+        const [a, b, c] = condition;
+        if (board[a] && board[a] === board[b] && board[a] === board[c]) return [a, b, c];
+    }
+    return null;
+}
+
+function highlightWinningCells(indices) {
+    indices.forEach(i => cells[i].classList.add('winner'));
 }
 
 function disableBoard() {
-    cells.forEach(cell => {
-        cell.classList.add('disabled');
-    });
+    cells.forEach(cell => cell.classList.add('disabled'));
 }
 
-function resetTictactoe() {
-    initializeTictactoe();
-}
+function resetTictactoe() { initializeTictactoe(); }
 
 // === CHESS FUNCTIONS ===
 function initializeChess() {
@@ -215,350 +192,181 @@ function initializeChess() {
     chessWhiteToMove = true;
     chessSelectedSquare = null;
     chessMoves = [];
+    lastMove = null;
+    castlingRights = { wK: true, wQ: true, bK: true, bQ: true };
     renderChessBoard();
     updateChessStatus();
 }
 
 function renderChessBoard() {
-    const board = document.getElementById('chessBoard');
-    board.innerHTML = '';
-    
+    const boardEl = document.getElementById('chessBoard');
+    boardEl.innerHTML = '';
     for (let row = 0; row < 8; row++) {
         for (let col = 0; col < 8; col++) {
             const square = document.createElement('div');
-            const isLight = (row + col) % 2 === 0;
-            square.className = `chess-square ${isLight ? 'light' : 'dark'}`;
-            
+            square.className = `chess-square ${(row + col) % 2 === 0 ? 'light' : 'dark'}`;
             const piece = chessBoard[row][col];
-            if (piece !== '.') {
-                square.textContent = PIECE_UNICODE[piece] || piece;
-            }
-            
+            if (piece !== '.') square.textContent = PIECE_UNICODE[piece] || piece;
             square.addEventListener('click', () => handleChessClick(row, col));
-            board.appendChild(square);
+            boardEl.appendChild(square);
         }
     }
 }
 
-// Chess move validation functions
-function isPathClear(fromRow, fromCol, toRow, toCol) {
-    const rowDir = toRow === fromRow ? 0 : (toRow > fromRow ? 1 : -1);
-    const colDir = toCol === fromCol ? 0 : (toCol > fromCol ? 1 : -1);
-    
-    let r = fromRow + rowDir;
-    let c = fromCol + colDir;
-    
-    while (r !== toRow || c !== toCol) {
+function isPathClear(fromR, fromC, toR, toC) {
+    const rDir = toR === fromR ? 0 : (toR > fromR ? 1 : -1);
+    const cDir = toC === fromC ? 0 : (toC > fromC ? 1 : -1);
+    let r = fromR + rDir, c = fromC + cDir;
+    while (r !== toR || c !== toC) {
         if (chessBoard[r][c] !== '.') return false;
-        r += rowDir;
-        c += colDir;
+        r += rDir; c += cDir;
     }
     return true;
 }
 
-function isValidPawnMove(fromRow, fromCol, toRow, toCol, piece) {
+
+function isValidPawnMove(fromR, fromC, toR, toC, piece) {
     const isWhite = piece === piece.toUpperCase();
-    const direction = isWhite ? -1 : 1;
-    const startRow = isWhite ? 6 : 1;
+    const dir = isWhite ? -1 : 1;
+    const target = chessBoard[toR][toC];
     
-    const targetPiece = chessBoard[toRow][toCol];
-    
-    // Forward move
-    if (toCol === fromCol && targetPiece === '.') {
-        if (toRow === fromRow + direction) return true; // One square
-        if (fromRow === startRow && toRow === fromRow + 2 * direction) return isPathClear(fromRow, fromCol, toRow, toCol); // Two squares
+    if (toC === fromC && target === '.') {
+        if (toR === fromR + dir) return true;
+        if (fromR === (isWhite ? 6 : 1) && toR === fromR + 2 * dir) return isPathClear(fromR, fromC, toR, toC);
     }
     
-    // Diagonal capture
-    if (Math.abs(toCol - fromCol) === 1 && toRow === fromRow + direction && targetPiece !== '.') {
-        return targetPiece === targetPiece.toUpperCase() !== isWhite; // Different color
-    }
-    
-    return false;
-}
-
-function isValidKnightMove(fromRow, fromCol, toRow, toCol) {
-    const rowDiff = Math.abs(toRow - fromRow);
-    const colDiff = Math.abs(toCol - fromCol);
-    return (rowDiff === 2 && colDiff === 1) || (rowDiff === 1 && colDiff === 2);
-}
-
-function isValidBishopMove(fromRow, fromCol, toRow, toCol) {
-    if (Math.abs(toRow - fromRow) !== Math.abs(toCol - fromCol)) return false;
-    return isPathClear(fromRow, fromCol, toRow, toCol);
-}
-
-function isValidRookMove(fromRow, fromCol, toRow, toCol) {
-    if (fromRow !== toRow && fromCol !== toCol) return false;
-    return isPathClear(fromRow, fromCol, toRow, toCol);
-}
-
-function isValidQueenMove(fromRow, fromCol, toRow, toCol) {
-    // Queen combines rook and bishop moves
-    if (fromRow === toRow || fromCol === toCol) {
-        return isPathClear(fromRow, fromCol, toRow, toCol); // Rook-like
-    }
-    if (Math.abs(toRow - fromRow) === Math.abs(toCol - fromCol)) {
-        return isPathClear(fromRow, fromCol, toRow, toCol); // Bishop-like
+    if (Math.abs(toC - fromC) === 1 && toR === fromR + dir) {
+        if (target !== '.' && (target === target.toUpperCase() !== isWhite)) return true;
+        if (target === '.' && lastMove && lastMove.piece.toLowerCase() === 'p') {
+            const wasJump = Math.abs(lastMove.fromRow - lastMove.toRow) === 2;
+            const isBeside = lastMove.toRow === fromR && lastMove.toCol === toC;
+            if (wasJump && isBeside) return true;
+        }
     }
     return false;
 }
 
-function isValidKingMove(fromRow, fromCol, toRow, toCol) {
-    return Math.abs(toRow - fromRow) <= 1 && Math.abs(toCol - fromCol) <= 1 && (toRow !== fromRow || toCol !== fromCol);
-}
+function isValidChessMove(fR, fC, tR, tC) {
+    const piece = chessBoard[fR][fC].toLowerCase();
+    const isWhite = chessBoard[fR][fC] === chessBoard[fR][fC].toUpperCase();
+    const rDiff = Math.abs(tR - fR), cDiff = Math.abs(tC - fC);
 
-function isValidChessMove(fromRow, fromCol, toRow, toCol) {
-    const piece = chessBoard[fromRow][fromCol].toLowerCase();
-    const targetPiece = chessBoard[toRow][toCol];
-    
     switch (piece) {
-        case 'p': return isValidPawnMove(fromRow, fromCol, toRow, toCol, chessBoard[fromRow][fromCol]);
-        case 'n': return isValidKnightMove(fromRow, fromCol, toRow, toCol);
-        case 'b': return isValidBishopMove(fromRow, fromCol, toRow, toCol);
-        case 'r': return isValidRookMove(fromRow, fromCol, toRow, toCol);
-        case 'q': return isValidQueenMove(fromRow, fromCol, toRow, toCol);
-        case 'k': return isValidKingMove(fromRow, fromCol, toRow, toCol);
+        case 'p': return isValidPawnMove(fR, fC, tR, tC, chessBoard[fR][fC]);
+        case 'n': return (rDiff === 2 && cDiff === 1) || (rDiff === 1 && cDiff === 2);
+        case 'b': return rDiff === cDiff && isPathClear(fR, fC, tR, tC);
+        case 'r': return (fR === tR || fC === tC) && isPathClear(fR, fC, tR, tC);
+        case 'q': return (rDiff === cDiff || fR === tR || fC === tC) && isPathClear(fR, fC, tR, tC);
+        case 'k': 
+            if (rDiff <= 1 && cDiff <= 1) return true;
+            if (fR === tR && cDiff === 2) {
+                const row = isWhite ? 7 : 0;
+                if (fR !== row || fC !== 4) return false;
+                const isKingside = tC > fC;
+                if (isWhite ? (isKingside ? !castlingRights.wK : !castlingRights.wQ) : (isKingside ? !castlingRights.bK : !castlingRights.bQ)) return false;
+                const path = isKingside ? [5, 6] : [1, 2, 3];
+                if (path.some(c => chessBoard[row][c] !== '.')) return false;
+                return !isSquareAttackedByColor(row, 4, !isWhite) && !isSquareAttackedByColor(row, isKingside ? 5 : 3, !isWhite);
+            }
+            return false;
         default: return false;
     }
 }
 
-// Check and Checkmate detection
-function isSquareAttackedByColor(row, col, attackingByWhite) {
+function isSquareAttackedByColor(row, col, byWhite) {
     for (let r = 0; r < 8; r++) {
         for (let c = 0; c < 8; c++) {
-            const piece = chessBoard[r][c];
-            if (piece === '.') continue;
-            
-            const isWhitePiece = piece === piece.toUpperCase();
-            if (isWhitePiece !== attackingByWhite) continue;
-            
-            const pieceLower = piece.toLowerCase();
-            
-            // Check if this piece can attack the target square
-            switch (pieceLower) {
-                case 'p':
-                    const pawnDir = isWhitePiece ? -1 : 1;
-                    if (r + pawnDir === row && Math.abs(c - col) === 1) return true;
-                    break;
-                case 'n':
-                    const rowDiff = Math.abs(r - row);
-                    const colDiff = Math.abs(c - col);
-                    if ((rowDiff === 2 && colDiff === 1) || (rowDiff === 1 && colDiff === 2)) return true;
-                    break;
-                case 'b':
-                    if (Math.abs(r - row) === Math.abs(c - col) && isPathClear(r, c, row, col)) return true;
-                    break;
-                case 'r':
-                    if ((r === row || c === col) && isPathClear(r, c, row, col)) return true;
-                    break;
-                case 'q':
-                    if ((r === row || c === col || Math.abs(r - row) === Math.abs(c - col)) && isPathClear(r, c, row, col)) return true;
-                    break;
-                case 'k':
-                    if (Math.abs(r - row) <= 1 && Math.abs(c - col) <= 1) return true;
-                    break;
+            const p = chessBoard[r][c];
+            if (p !== '.' && (p === p.toUpperCase()) === byWhite) {
+                if (isValidChessMove(r, c, row, col)) return true;
             }
         }
     }
     return false;
 }
 
-function findKing(isWhiteKing) {
-    const target = isWhiteKing ? 'K' : 'k';
-    for (let r = 0; r < 8; r++) {
-        for (let c = 0; c < 8; c++) {
-            if (chessBoard[r][c] === target) return [r, c];
-        }
-    }
-    return null;
-}
-
-function isKingInCheck(isWhiteKing) {
-    const kingPos = findKing(isWhiteKing);
-    if (!kingPos) return false;
-    const [row, col] = kingPos;
-    return isSquareAttackedByColor(row, col, !isWhiteKing);
-}
-
-function isMoveLegal(fromRow, fromCol, toRow, toCol) {
-    // Make the move temporarily
-    const originalPiece = chessBoard[toRow][toCol];
-    const movingPiece = chessBoard[fromRow][fromCol];
-    chessBoard[toRow][toCol] = movingPiece;
-    chessBoard[fromRow][fromCol] = '.';
-    
-    const isWhitePiece = movingPiece === movingPiece.toUpperCase();
-    const inCheck = isKingInCheck(isWhitePiece);
-    
-    // Undo the move
-    chessBoard[fromRow][fromCol] = movingPiece;
-    chessBoard[toRow][toCol] = originalPiece;
-    
+function isMoveLegal(fR, fC, tR, tC) {
+    const original = chessBoard[tR][tC], moving = chessBoard[fR][fC];
+    chessBoard[tR][tC] = moving; chessBoard[fR][fC] = '.';
+    const isWhite = moving === moving.toUpperCase();
+    const kingPos = (() => {
+        for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) if (chessBoard[r][c] === (isWhite ? 'K' : 'k')) return [r, c];
+    })();
+    const inCheck = isSquareAttackedByColor(kingPos[0], kingPos[1], !isWhite);
+    chessBoard[fR][fC] = moving; chessBoard[tR][tC] = original;
     return !inCheck;
-}
-
-function isKingInCheckmate(isWhiteKing) {
-    if (!isKingInCheck(isWhiteKing)) return false;
-    
-    // Check if any legal move exists
-    for (let r = 0; r < 8; r++) {
-        for (let c = 0; c < 8; c++) {
-            const piece = chessBoard[r][c];
-            if (piece === '.') continue;
-            
-            const isWhitePiece = piece === piece.toUpperCase();
-            if (isWhitePiece !== isWhiteKing) continue;
-            
-            // Try all possible destination squares
-            for (let toR = 0; toR < 8; toR++) {
-                for (let toC = 0; toC < 8; toC++) {
-                    const targetPiece = chessBoard[toR][toC];
-                    
-                    // Can't capture own piece
-                    if (targetPiece !== '.') {
-                        const isTargetWhite = targetPiece === targetPiece.toUpperCase();
-                        if (isTargetWhite === isWhitePiece) continue;
-                    }
-                    
-                    // Check if this is a valid move that gets us out of check
-                    if (isValidChessMove(r, c, toR, toC) && isMoveLegal(r, c, toR, toC)) {
-                        return false; // Found a legal move, not checkmate
-                    }
-                }
-            }
-        }
-    }
-    
-    return true; // No legal moves found, it's checkmate
 }
 
 function handleChessClick(row, col) {
     if (chessSelectedSquare) {
-        const [fromRow, fromCol] = chessSelectedSquare;
-        const piece = chessBoard[fromRow][fromCol];
-        const targetPiece = chessBoard[row][col];
-        
-        // Check if clicking same square
-        if (fromRow === row && fromCol === col) {
-            chessSelectedSquare = null;
-            renderChessBoard();
-            return;
+        const [fR, fC] = chessSelectedSquare;
+        const p = chessBoard[fR][fC], target = chessBoard[row][col];
+        const isWhite = p === p.toUpperCase();
+
+        if (fR === row && fC === col) { chessSelectedSquare = null; renderChessBoard(); return; }
+        if (chessWhiteToMove !== isWhite || (target !== '.' && (target === target.toUpperCase()) === isWhite)) {
+            chessSelectedSquare = null; renderChessBoard(); return;
         }
-        
-        // Check if it's the correct player's turn
-        const isWhitePiece = piece === piece.toUpperCase();
-        if (chessWhiteToMove !== isWhitePiece) {
-            chessSelectedSquare = null;
-            renderChessBoard();
-            return;
-        }
-        
-        // Can't capture own piece
-        const isTargetWhite = targetPiece !== '.' && targetPiece === targetPiece.toUpperCase();
-        if (targetPiece !== '.' && isWhitePiece === isTargetWhite) {
-            chessSelectedSquare = null;
-            renderChessBoard();
-            return;
-        }
-        
-        // Validate move based on piece type
-        if (!isValidChessMove(fromRow, fromCol, row, col)) {
-            chessSelectedSquare = null;
-            renderChessBoard();
-            return;
-        }
-        
-        // Validate move doesn't leave king in check
-        if (!isMoveLegal(fromRow, fromCol, row, col)) {
-            chessSelectedSquare = null;
-            renderChessBoard();
-            return;
-        }
-        
-        // Make the move
-        chessBoard[row][col] = piece;
-        chessBoard[fromRow][fromCol] = '.';
-        chessWhiteToMove = !chessWhiteToMove;
-        chessSelectedSquare = null;
-        
-        chessMoves.push(`${String.fromCharCode(97 + fromCol)}${8 - fromRow} to ${String.fromCharCode(97 + col)}${8 - row}`);
-        
-        // Check for checkmate or check after move
-        const opponentIsWhite = chessWhiteToMove;
-        let gameEnded = false;
-        
-        if (isKingInCheckmate(opponentIsWhite)) {
-            updateChessStatus();
-            chessStatusDisplay.textContent = `${chessWhiteToMove ? '♔ White' : '♚ Black'} is Checkmated! ${!chessWhiteToMove ? '♔ White' : '♚ Black'} Wins!`;
-            gameEnded = true;
-        } else if (isKingInCheck(opponentIsWhite)) {
-            updateChessStatus();
-            chessStatusDisplay.textContent = `${chessWhiteToMove ? '♔ White' : '♚ Black'} is in Check!`;
-        } else {
-            updateChessStatus();
-        }
-        
-        renderChessBoard();
-    } else {
-        const piece = chessBoard[row][col];
-        if (piece !== '.') {
-            const isWhitePiece = piece === piece.toUpperCase();
-            if (chessWhiteToMove === isWhitePiece) {
-                chessSelectedSquare = [row, col];
-                renderChessBoard();
-                highlightSelectedSquare();
+
+        if (isValidChessMove(fR, fC, row, col) && isMoveLegal(fR, fC, row, col)) {
+            const isEnPassant = p.toLowerCase() === 'p' && fC !== col && target === '.';
+            const isCastling = p.toLowerCase() === 'k' && Math.abs(col - fC) === 2;
+
+            chessBoard[row][col] = p; chessBoard[fR][fC] = '.';
+            if (isEnPassant) chessBoard[fR][col] = '.';
+            if (isCastling) {
+                const rookC = col > fC ? 7 : 0, nextC = col > fC ? col - 1 : col + 1;
+                chessBoard[row][nextC] = chessBoard[row][rookC]; chessBoard[row][rookC] = '.';
             }
+
+            // Update Rights
+            if (p === 'K') { castlingRights.wK = false; castlingRights.wQ = false; }
+            if (p === 'k') { castlingRights.bK = false; castlingRights.bQ = false; }
+            if (p === 'R') { if (fC === 0) castlingRights.wQ = false; if (fC === 7) castlingRights.wK = false; }
+            if (p === 'r') { if (fC === 0) castlingRights.bQ = false; if (fC === 7) castlingRights.bK = false; }
+
+            // Log Move
+            chessMoves.push(`${String.fromCharCode(97 + fC)}${8 - fR} to ${String.fromCharCode(97 + col)}${8 - row}`);
+            lastMove = { fromRow: fR, fromCol: fC, toRow: row, toCol: col, piece: p };
+            chessWhiteToMove = !chessWhiteToMove;
+            chessSelectedSquare = null;
+            updateChessStatus();
+            renderChessBoard();
+        } else {
+            chessSelectedSquare = null; renderChessBoard();
+        }
+    } else {
+        const p = chessBoard[row][col];
+        if (p !== '.' && (p === p.toUpperCase()) === chessWhiteToMove) {
+            chessSelectedSquare = [row, col];
+            renderChessBoard();
+            const idx = row * 8 + col;
+            document.querySelectorAll('.chess-square')[idx].classList.add('selected');
         }
     }
-}
-
-function highlightSelectedSquare() {
-    if (!chessSelectedSquare) return;
-    const [row, col] = chessSelectedSquare;
-    const index = row * 8 + col;
-    const squares = document.querySelectorAll('.chess-square');
-    squares[index].classList.add('selected');
 }
 
 function updateChessStatus() {
-    chessStatusDisplay.textContent = chessWhiteToMove ? '♔ White\'s Turn' : '♚ Black\'s Turn';
-    if (chessMoves.length > 0) {
-        chessMoveLog.textContent = `Last move: ${chessMoves[chessMoves.length - 1]}`;
-    }
+    chessStatusDisplay.textContent = chessWhiteToMove ? "♔ White's Turn" : "♚ Black's Turn";
+    if (chessMoves.length > 0) chessMoveLog.textContent = `Last move: ${chessMoves[chessMoves.length - 1]}`;
 }
 
-function resetChess() {
-    initializeChess();
-}
-// Event listeners
+function resetChess() { initializeChess(); }
+
 tictactoeResetBtn.addEventListener('click', resetTictactoe);
 chessResetBtn.addEventListener('click', resetChess);
-
-backFromTictactoeBtn.addEventListener('click', function() {
-    currentGame = null;
-    tictactoeGamePage.classList.add('hidden');
-    gameSelectionPage.classList.remove('hidden');
-});
-
-backFromChessBtn.addEventListener('click', function() {
-    currentGame = null;
-    chessGamePage.classList.add('hidden');
-    gameSelectionPage.classList.remove('hidden');
-});
-
+backFromTictactoeBtn.addEventListener('click', () => { tictactoeGamePage.classList.add('hidden'); gameSelectionPage.classList.remove('hidden'); });
+backFromChessBtn.addEventListener('click', () => { chessGamePage.classList.add('hidden'); gameSelectionPage.classList.remove('hidden'); });
 logoutBtn2.addEventListener('click', handleLogout);
 logoutBtn3.addEventListener('click', handleLogout);
 logoutBtn4.addEventListener('click', handleLogout);
 
-// Initialize Google Sign-In
 window.onload = function() {
-    google.accounts.id.initialize({
-        client_id: '275823790253-l5skr26eicv7091ntu8g3g35i07jn93n.apps.googleusercontent.com',
-        callback: handleCredentialResponse
-    });
-    google.accounts.id.renderButton(
-        document.querySelector('.g_id_signin'),
-        { theme: 'outline', size: 'large' }
-    );
+    if (window.google) {
+        google.accounts.id.initialize({
+            client_id: '275823790253-l5skr26eicv7091ntu8g3g35i07jn93n.apps.googleusercontent.com',
+            callback: handleCredentialResponse
+        });
+        google.accounts.id.renderButton(document.querySelector('.g_id_signin'), { theme: 'outline', size: 'large' });
+    }
 };

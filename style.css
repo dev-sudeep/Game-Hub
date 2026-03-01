@@ -58,6 +58,57 @@ body {
     font-weight: 500;
 }
 
+/* Guest Login Styles */
+.divider {
+    margin: 15px 0;
+    color: #888;
+    font-size: 0.9rem;
+    position: relative;
+    width: 100%;
+    text-align: center;
+}
+
+.divider::before, .divider::after {
+    position: absolute;
+    top: 50%;
+    width: 40%;
+    height: 1px;
+    background-color: #ddd;
+}
+
+.divider::before { left: 0; }
+.divider::after { right: 0; }
+
+.guest-login {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+}
+
+#guestName {
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 1rem;
+    width: 100%;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+#guestName:focus {
+    border-color: #4299e1;
+}
+
+#guestLoginBtn {
+    background-color: #4299e1;
+    width: 100%;
+}
+
+#guestLoginBtn:hover {
+    background-color: #3182ce;
+}
+
 /* Game Selection Page */
 .game-selection-container {
     display: flex;
@@ -501,3 +552,4 @@ body {
         grid-template-columns: 1fr;
     }
 }
+
