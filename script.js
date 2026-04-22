@@ -196,15 +196,29 @@ function initializeChess() {
     updateChessStatus();
 }
 
+function displayToBoardCoordinates(displayRow, displayCol) {
+    return [7 - displayCol, displayRow];
+}
+
 function renderChessBoard() {
     const boardEl = document.getElementById('chessBoard');
     boardEl.innerHTML = '';
-    for (let row = 0; row < 8; row++) {
-        for (let col = 0; col < 8; col++) {
+    for (let displayRow = 0; displayRow < 8; displayRow++) {
+        for (let displayCol = 0; displayCol < 8; displayCol++) {
+            const [row, col] = displayToBoardCoordinates(displayRow, displayCol);
             const square = document.createElement('div');
             square.className = `chess-square ${(row + col) % 2 === 0 ? 'light' : 'dark'}`;
             const piece = chessBoard[row][col];
-            if (piece !== '.') square.textContent = PIECE_UNICODE[piece] || piece;
+            if (piece !== '.') {
+                const pieceEl = document.createElement('span');
+                pieceEl.className = 'chess-piece';
+                if (piece === piece.toLowerCase()) pieceEl.classList.add('black-piece');
+                pieceEl.textContent = PIECE_UNICODE[piece] || piece;
+                square.appendChild(pieceEl);
+            }
+            if (chessSelectedSquare && chessSelectedSquare[0] === row && chessSelectedSquare[1] === col) {
+                square.classList.add('selected');
+            }
             square.addEventListener('click', () => handleChessClick(row, col));
             boardEl.appendChild(square);
         }
@@ -420,8 +434,6 @@ function handleChessClick(row, col) {
         if (p !== '.' && (p === p.toUpperCase()) === chessWhiteToMove) {
             chessSelectedSquare = [row, col];
             renderChessBoard();
-            const idx = row * 8 + col;
-            document.querySelectorAll('.chess-square')[idx].classList.add('selected');
         }
     }
 }
