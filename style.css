@@ -10,7 +10,7 @@
     --card-bg: #ffffff;
     --muted-text: #888;
     --status-text: #555;
-    --ttt-board-bg: #ffffff;
+    --ttt-board-bg: linear-gradient(145deg, #ffffff, #f8fafc);
     --ttt-cell-bg: #fafafa;
     --ttt-cell-border: #ddd;
     --ttt-cell-hover-bg: #f0f0f0;
@@ -566,8 +566,9 @@ body.dark-mode {
 }
 
 body.dark-mode .theme-toggle {
-    background: #e5e7eb;
-    color: #111827;
+    background: linear-gradient(135deg, #1d4ed8, #2563eb);
+    color: #eff6ff;
+    box-shadow: 0 8px 18px rgba(37, 99, 235, 0.35);
 }
 
 body.dark-mode .login-box,
@@ -596,28 +597,51 @@ body.dark-mode #guestName::placeholder {
     color: #9ca3af;
 }
 
+body.dark-mode #guestName:focus {
+    border-color: #60a5fa;
+}
+
+body.dark-mode .game-card {
+    background: linear-gradient(135deg, #1e3a8a 0%, #312e81 100%);
+    box-shadow: 0 10px 24px rgba(30, 58, 138, 0.32);
+}
+
+body.dark-mode .game-card:nth-child(2) {
+    background: linear-gradient(135deg, #7c2d12 0%, #831843 100%);
+    box-shadow: 0 10px 24px rgba(136, 19, 55, 0.3);
+}
+
+body.dark-mode .game-card:hover {
+    box-shadow: 0 12px 26px rgba(15, 23, 42, 0.45);
+}
+
+body.dark-mode .game-description {
+    color: #e2e8f0;
+    opacity: 0.95;
+}
+
 body.dark-mode .back-btn {
-    background-color: #4b5563;
+    background-color: #334155;
 }
 
 body.dark-mode .back-btn:hover {
-    background-color: #6b7280;
+    background-color: #475569;
 }
 
 body.dark-mode .logout-btn {
-    background-color: #b91c1c;
+    background-color: #dc2626;
 }
 
 body.dark-mode .logout-btn:hover {
-    background-color: #991b1b;
+    background-color: #b91c1c;
 }
 
 body.dark-mode .reset-btn {
-    background-color: #2563eb;
+    background-color: #3b82f6;
 }
 
 body.dark-mode .reset-btn:hover {
-    background-color: #1d4ed8;
+    background-color: #2563eb;
 }
 
 body.dark-mode .play-btn {
@@ -696,6 +720,36 @@ body.dark-mode .chess-square.light {
 
 body.dark-mode .chess-square.dark {
     background-color: #836349;
+}
+
+body.dark-mode .chess-square.selected {
+    background-color: #8fbf4a;
+}
+
+body.dark-mode .chess-square.legal-move::after {
+    background-color: rgba(74, 222, 128, 0.68);
+}
+
+body.dark-mode .setup-subtitle {
+    color: #94a3b8;
+}
+
+body.dark-mode .player-btn {
+    background: #1f2937;
+    border-color: #475569;
+}
+
+body.dark-mode .player-btn:hover {
+    border-color: #60a5fa;
+    box-shadow: 0 4px 14px rgba(96, 165, 250, 0.24);
+}
+
+body.dark-mode .player-count {
+    color: #e5e7eb;
+}
+
+body.dark-mode .player-names {
+    color: #9ca3af;
 }
 
 /* Ludo Setup Styles */
