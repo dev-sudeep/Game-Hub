@@ -30,6 +30,7 @@
     --tracker-col-side-min: 120px;
     --tracker-side-padding: 50px;
     --chess-board-max: 560px;
+    --tracker-size-offset: 10px;
 }
 
 body {
@@ -490,8 +491,8 @@ body {
 }
 
 .move-tracker {
-    width: min(100%, calc(var(--tracker-base-width) - 10px));
-    height: calc(var(--tracker-base-height) - 10px);
+    width: min(100%, calc(var(--tracker-base-width) - var(--tracker-size-offset)));
+    height: calc(var(--tracker-base-height) - var(--tracker-size-offset));
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(246, 248, 252, 0.98));
     border: 1px solid rgba(17, 24, 39, 0.08);
     border-radius: 14px;
