@@ -270,25 +270,96 @@ function isValidChessMove(fR, fC, tR, tC) {
     }
 }
 
+function isPieceAttackingSquare(fR, fC, tR, tC) {
+    const piece = chessBoard[fR][fC];
+    if (piece === '.') return false;
+
+    const lower = piece.toLowerCase();
+    const isWhite = piece === piece.toUpperCase();
+    const rDiff = Math.abs(tR - fR), cDiff = Math.abs(tC - fC);
+    const rDir = tR - fR, cDir = tC - fC;
+
+    switch (lower) {
+        case 'p': {
+            const dir = isWhite ? -1 : 1;
+            return rDir === dir && cDiff === 1;
+        }
+        case 'n':
+            return (rDiff === 2 && cDiff === 1) || (rDiff === 1 && cDiff === 2);
+        case 'b':
+            return rDiff === cDiff && isPathClear(fR, fC, tR, tC);
+        case 'r':
+            return (fR === tR || fC === tC) && isPathClear(fR, fC, tR, tC);
+        case 'q':
+            return (rDiff === cDiff || fR === tR || fC === tC) && isPathClear(fR, fC, tR, tC);
+        case 'k':
+            return rDiff <= 1 && cDiff <= 1;
+        default:
+            return false;
+    }
+}
+
 function isSquareAttackedByColor(row, col, byWhite) {
     for (let r = 0; r < 8; r++) {
         for (let c = 0; c < 8; c++) {
             const p = chessBoard[r][c];
             if (p !== '.' && (p === p.toUpperCase()) === byWhite) {
-                if (isValidChessMove(r, c, row, col)) return true;
+                if (isPieceAttackingSquare(r, c, row, col)) return true;
             }
         }
     }
     return false;
 }
 
+function findKingPosition(isWhite) {
+    const king = isWhite ? 'K' : 'k';
+    for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+            if (chessBoard[r][c] === king) return [r, c];
+        }
+    }
+    return null;
+}
+
+function isKingInCheck(isWhite) {
+    const kingPos = findKingPosition(isWhite);
+    if (!kingPos) return false;
+    return isSquareAttackedByColor(kingPos[0], kingPos[1], !isWhite);
+}
+
+function hasAnyLegalMove(isWhiteTurn) {
+    for (let fR = 0; fR < 8; fR++) {
+        for (let fC = 0; fC < 8; fC++) {
+            const piece = chessBoard[fR][fC];
+            if (piece === '.' || (piece === piece.toUpperCase()) !== isWhiteTurn) continue;
+
+            for (let tR = 0; tR < 8; tR++) {
+                for (let tC = 0; tC < 8; tC++) {
+                    if (fR === tR && fC === tC) continue;
+                    const target = chessBoard[tR][tC];
+                    if (target !== '.' && (target === target.toUpperCase()) === isWhiteTurn) continue;
+                    if (isValidChessMove(fR, fC, tR, tC) && isMoveLegal(fR, fC, tR, tC)) return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+function getChessGameState(isWhiteTurn) {
+    const inCheck = isKingInCheck(isWhiteTurn);
+    const hasLegalMove = hasAnyLegalMove(isWhiteTurn);
+    if (inCheck && !hasLegalMove) return 'checkmate';
+    if (!inCheck && !hasLegalMove) return 'stalemate';
+    if (inCheck) return 'check';
+    return 'normal';
+}
+
 function isMoveLegal(fR, fC, tR, tC) {
     const original = chessBoard[tR][tC], moving = chessBoard[fR][fC];
     chessBoard[tR][tC] = moving; chessBoard[fR][fC] = '.';
     const isWhite = moving === moving.toUpperCase();
-    const kingPos = (() => {
-        for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) if (chessBoard[r][c] === (isWhite ? 'K' : 'k')) return [r, c];
-    })();
+    const kingPos = findKingPosition(isWhite);
     if (!kingPos) { chessBoard[fR][fC] = moving; chessBoard[tR][tC] = original; return true; }
     const inCheck = isSquareAttackedByColor(kingPos[0], kingPos[1], !isWhite);
     chessBoard[fR][fC] = moving; chessBoard[tR][tC] = original;
@@ -296,6 +367,9 @@ function isMoveLegal(fR, fC, tR, tC) {
 }
 
 function handleChessClick(row, col) {
+    const gameState = getChessGameState(chessWhiteToMove);
+    if (gameState === 'checkmate' || gameState === 'stalemate') return;
+
     if (chessSelectedSquare) {
         const [fR, fC] = chessSelectedSquare;
         const p = chessBoard[fR][fC], target = chessBoard[row][col];
@@ -353,8 +427,25 @@ function handleChessClick(row, col) {
 }
 
 function updateChessStatus() {
-    chessStatusDisplay.textContent = chessWhiteToMove ? "♔ White's Turn" : "♚ Black's Turn";
-    if (chessMoves.length > 0) chessMoveLog.textContent = `Last move: ${chessMoves[chessMoves.length - 1]}`;
+    const state = getChessGameState(chessWhiteToMove);
+    const side = chessWhiteToMove ? 'White' : 'Black';
+    const winner = chessWhiteToMove ? 'Black' : 'White';
+
+    if (state === 'checkmate') {
+        chessStatusDisplay.textContent = `♚ Checkmate! ${winner} wins`;
+    } else if (state === 'stalemate') {
+        chessStatusDisplay.textContent = 'Draw by stalemate';
+    } else if (state === 'check') {
+        chessStatusDisplay.textContent = `${chessWhiteToMove ? '♔' : '♚'} ${side} is in check`;
+    } else {
+        chessStatusDisplay.textContent = `${chessWhiteToMove ? '♔' : '♚'} ${side}'s Turn`;
+    }
+
+    if (chessMoves.length > 0) {
+        chessMoveLog.textContent = `Last move: ${chessMoves[chessMoves.length - 1]}`;
+    } else {
+        chessMoveLog.textContent = '';
+    }
 }
 
 function resetChess() { initializeChess(); }
