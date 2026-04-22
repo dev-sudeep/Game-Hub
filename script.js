@@ -65,6 +65,10 @@ const logoutBtn4 = document.getElementById('logoutBtn4');
 
 const guestLoginBtn = document.getElementById('guestLoginBtn');
 const guestNameInput = document.getElementById('guestName');
+const themeToggleBtn = document.getElementById('themeToggle');
+const whiteMovesList = document.getElementById('whiteMovesList');
+const blackMovesList = document.getElementById('blackMovesList');
+const THEME_STORAGE_KEY = 'gamehub-theme';
 
 if (guestLoginBtn) {
     guestLoginBtn.addEventListener('click', function() {
@@ -194,6 +198,7 @@ function initializeChess() {
     castlingRights = { wK: true, wQ: true, bK: true, bQ: true };
     renderChessBoard();
     updateChessStatus();
+    renderMoveTrackers();
 }
 
 function displayToBoardCoordinates(displayRow, displayCol) {
@@ -420,12 +425,20 @@ function handleChessClick(row, col) {
             if (p === 'r') { if (fC === 0) castlingRights.bQ = false; if (fC === 7) castlingRights.bK = false; }
 
             // Log Move
-            chessMoves.push(`${String.fromCharCode(97 + fC)}${8 - fR} to ${String.fromCharCode(97 + col)}${8 - row}`);
+            const moveText = `${String.fromCharCode(97 + fC)}${8 - fR} to ${String.fromCharCode(97 + col)}${8 - row}`;
+            if (isWhite) {
+                chessMoves.push({ white: moveText, black: '' });
+            } else if (chessMoves.length > 0) {
+                chessMoves[chessMoves.length - 1].black = moveText;
+            } else {
+                chessMoves.push({ white: '', black: moveText });
+            }
             lastMove = { fromRow: fR, fromCol: fC, toRow: row, toCol: col, piece: p };
             chessWhiteToMove = !chessWhiteToMove;
             chessSelectedSquare = null;
             updateChessStatus();
             renderChessBoard();
+            renderMoveTrackers();
         } else {
             chessSelectedSquare = null; renderChessBoard();
         }
@@ -454,13 +467,57 @@ function updateChessStatus() {
     }
 
     if (chessMoves.length > 0) {
-        chessMoveLog.textContent = `Last move: ${chessMoves[chessMoves.length - 1]}`;
+        const latestRound = chessMoves[chessMoves.length - 1];
+        const latestMove = latestRound.black || latestRound.white;
+        chessMoveLog.textContent = `Last move: ${latestMove}`;
     } else {
         chessMoveLog.textContent = '';
     }
 }
 
+function renderMoveTrackers() {
+    if (!whiteMovesList || !blackMovesList) return;
+    whiteMovesList.innerHTML = '';
+    blackMovesList.innerHTML = '';
+
+    chessMoves.forEach((round, index) => {
+        if (round.white) {
+            const whiteItem = document.createElement('div');
+            whiteItem.className = 'move-item';
+            whiteItem.textContent = `${index + 1}. ${round.white}`;
+            whiteMovesList.appendChild(whiteItem);
+        }
+
+        if (round.black) {
+            const blackItem = document.createElement('div');
+            blackItem.className = 'move-item';
+            blackItem.textContent = `${index + 1}... ${round.black}`;
+            blackMovesList.appendChild(blackItem);
+        }
+    });
+
+    whiteMovesList.scrollTop = whiteMovesList.scrollHeight;
+    blackMovesList.scrollTop = blackMovesList.scrollHeight;
+}
+
 function resetChess() { initializeChess(); }
+
+function applyTheme(theme) {
+    const isDark = theme === 'dark';
+    document.body.classList.toggle('dark-mode', isDark);
+    if (themeToggleBtn) themeToggleBtn.textContent = isDark ? '☀️ Light' : '🌙 Dark';
+}
+
+function initializeTheme() {
+    const storedTheme = localStorage.getItem(THEME_STORAGE_KEY) || 'light';
+    applyTheme(storedTheme);
+}
+
+function toggleTheme() {
+    const nextTheme = document.body.classList.contains('dark-mode') ? 'light' : 'dark';
+    localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
+    applyTheme(nextTheme);
+}
 
 tictactoeResetBtn.addEventListener('click', resetTictactoe);
 chessResetBtn.addEventListener('click', resetChess);
@@ -469,8 +526,10 @@ backFromChessBtn.addEventListener('click', () => { chessGamePage.classList.add('
 logoutBtn2.addEventListener('click', handleLogout);
 logoutBtn3.addEventListener('click', handleLogout);
 logoutBtn4.addEventListener('click', handleLogout);
+if (themeToggleBtn) themeToggleBtn.addEventListener('click', toggleTheme);
 
 window.onload = function() {
+    initializeTheme();
     if (window.google) {
         google.accounts.id.initialize({
             client_id: '275823790253-l5skr26eicv7091ntu8g3g35i07jn93n.apps.googleusercontent.com',
