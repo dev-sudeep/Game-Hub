@@ -29,6 +29,7 @@
     --tracker-col-move-no: 60px;
     --tracker-col-side-min: 120px;
     --tracker-side-padding: 50px;
+    --chess-board-max: 560px;
 }
 
 body {
@@ -383,9 +384,9 @@ body {
 }
 
 .chess-game-layout {
-    width: min(100vw, 1180px);
+    width: min(100%, 1180px);
     display: grid;
-    grid-template-columns: minmax(var(--tracker-side-min), 1fr) minmax(300px, 560px) minmax(var(--tracker-side-min), 1fr);
+    grid-template-columns: minmax(var(--tracker-side-min), 1fr) minmax(300px, var(--chess-board-max)) minmax(var(--tracker-side-min), 1fr);
     align-items: stretch;
     gap: 16px;
     padding-inline: var(--tracker-side-padding);
@@ -393,7 +394,7 @@ body {
 
 .chess-board {
     width: 100%;
-    max-width: 560px;
+    max-width: var(--chess-board-max);
     aspect-ratio: 1 / 1;
     height: auto;
     display: grid;
@@ -568,7 +569,6 @@ body {
 .move-tracker.white-side {
     background: linear-gradient(120deg, rgba(255, 255, 255, 0.98), rgba(242, 246, 252, 0.98));
     border-right: 3px solid rgba(37, 99, 235, 0.4);
-    transform: rotate(90deg);
 }
 
 .move-tracker.white-side h3 {
@@ -579,7 +579,6 @@ body {
 .move-tracker.black-side {
     background: linear-gradient(240deg, rgba(255, 255, 255, 0.98), rgba(242, 246, 252, 0.98));
     border-left: 3px solid rgba(17, 24, 39, 0.35);
-    transform: rotate(270deg);
 }
 
 .move-tracker.black-side h3 {
