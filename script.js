@@ -494,7 +494,7 @@ function renderMoveTrackers() {
             whiteMovesList.appendChild(whiteItem);
         }
 
-        if (round.black) {
+        if (round.black !== null) {
             const blackItem = document.createElement('div');
             blackItem.className = 'move-item';
             blackItem.textContent = `${index + 1}. ${round.black}`;

@@ -515,6 +515,56 @@ body.dark-mode .theme-toggle {
     color: #111827;
 }
 
+body.dark-mode .login-box,
+body.dark-mode .selection-box,
+body.dark-mode .board,
+body.dark-mode .move-tracker {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+body.dark-mode .divider {
+    color: #9ca3af;
+}
+
+body.dark-mode .divider::before,
+body.dark-mode .divider::after {
+    background-color: #4b5563;
+}
+
+body.dark-mode #guestName {
+    background: #111827;
+    color: #f3f4f6;
+    border-color: #4b5563;
+}
+
+body.dark-mode #guestName::placeholder {
+    color: #9ca3af;
+}
+
+body.dark-mode .back-btn {
+    background-color: #4b5563;
+}
+
+body.dark-mode .back-btn:hover {
+    background-color: #6b7280;
+}
+
+body.dark-mode .logout-btn {
+    background-color: #b91c1c;
+}
+
+body.dark-mode .logout-btn:hover {
+    background-color: #991b1b;
+}
+
+body.dark-mode .reset-btn {
+    background-color: #2563eb;
+}
+
+body.dark-mode .reset-btn:hover {
+    background-color: #1d4ed8;
+}
+
 body.dark-mode .play-btn {
     background-color: #374151;
     color: #f9fafb;
@@ -550,6 +600,18 @@ body.dark-mode .move-tracker h3 {
 body.dark-mode .move-item {
     background: #111827;
     border-color: #374151;
+}
+
+body.dark-mode .chess-board {
+    border-color: #9ca3af;
+}
+
+body.dark-mode .chess-square.light {
+    background-color: #b4a188;
+}
+
+body.dark-mode .chess-square.dark {
+    background-color: #836349;
 }
 
 /* Ludo Setup Styles */
