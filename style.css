@@ -397,8 +397,17 @@ body {
     transition: transform 0.1s ease;
 }
 
+.chess-piece.black-piece {
+    display: inline-block;
+    transform: rotate(180deg);
+}
+
 .chess-piece:hover {
     transform: scale(1.1);
+}
+
+.chess-piece.black-piece:hover {
+    transform: rotate(180deg) scale(1.1);
 }
 
 .chess-legend {
@@ -552,4 +561,3 @@ body {
         grid-template-columns: 1fr;
     }
 }
-
