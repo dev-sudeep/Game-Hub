@@ -20,6 +20,12 @@
     --ttt-winner-bg: #ffd700;
     --ttt-winner-border: #ffb700;
     --ttt-winner-text: #333;
+    --tracker-side-min: 230px;
+    --tracker-side-max: 280px;
+    --tracker-base-width: 230px;
+    --tracker-base-height: 420px;
+    --tracker-mobile-width: 200px;
+    --tracker-mobile-height: 340px;
 }
 
 body {
@@ -376,7 +382,7 @@ body {
 .chess-game-layout {
     width: min(100%, 980px);
     display: grid;
-    grid-template-columns: minmax(230px, 280px) minmax(300px, 1fr) minmax(230px, 280px);
+    grid-template-columns: minmax(var(--tracker-side-min), var(--tracker-side-max)) minmax(300px, 1fr) minmax(var(--tracker-side-min), var(--tracker-side-max));
     align-items: stretch;
     gap: 16px;
 }
@@ -479,8 +485,8 @@ body {
 }
 
 .move-tracker {
-    width: 230px;
-    height: 420px;
+    width: var(--tracker-base-width);
+    height: var(--tracker-base-height);
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(246, 248, 252, 0.98));
     border: 1px solid rgba(17, 24, 39, 0.08);
     border-radius: 14px;
@@ -922,8 +928,8 @@ body.dark-mode .player-names {
     }
 
     .move-tracker {
-        width: 200px;
-        height: 340px;
+        width: var(--tracker-mobile-width);
+        height: var(--tracker-mobile-height);
     }
 
     .games-grid {
