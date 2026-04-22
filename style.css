@@ -20,6 +20,14 @@
     --ttt-winner-bg: #ffd700;
     --ttt-winner-border: #ffb700;
     --ttt-winner-text: #333;
+    --tracker-side-min: 230px;
+    --tracker-side-max: 280px;
+    --tracker-base-width: 230px;
+    --tracker-base-height: 420px;
+    --tracker-mobile-width: 200px;
+    --tracker-mobile-height: 340px;
+    --tracker-col-move-no: 60px;
+    --tracker-col-side-min: 120px;
 }
 
 body {
@@ -376,7 +384,7 @@ body {
 .chess-game-layout {
     width: min(100%, 980px);
     display: grid;
-    grid-template-columns: minmax(130px, 170px) minmax(300px, 1fr) minmax(130px, 170px);
+    grid-template-columns: minmax(var(--tracker-side-min), var(--tracker-side-max)) minmax(300px, 1fr) minmax(var(--tracker-side-min), var(--tracker-side-max));
     align-items: stretch;
     gap: 16px;
 }
@@ -479,8 +487,8 @@ body {
 }
 
 .move-tracker {
-    width: 100%;
-    height: 100%;
+    width: var(--tracker-base-width);
+    height: var(--tracker-base-height);
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(246, 248, 252, 0.98));
     border: 1px solid rgba(17, 24, 39, 0.08);
     border-radius: 14px;
@@ -489,6 +497,8 @@ body {
     flex-direction: column;
     overflow: hidden;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
+    justify-self: center;
+    align-self: center;
 }
 
 .move-tracker h3 {
@@ -500,12 +510,13 @@ body {
     background: linear-gradient(180deg, #ffffff, #f3f4f6);
     border-bottom: 1px solid rgba(17, 24, 39, 0.12);
     color: #111827;
+    font-family: 'Lato', sans-serif;
 }
 
 .moves-list {
     flex: 1;
     overflow-y: auto;
-    padding: 10px;
+    padding: 10px 12px;
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -516,10 +527,34 @@ body {
     background: rgba(255, 255, 255, 0.9);
     border: 1px solid rgba(148, 163, 184, 0.25);
     border-radius: 10px;
-    padding: 7px 10px;
-    white-space: nowrap;
+    padding: 8px 10px;
     box-shadow: 0 3px 8px rgba(15, 23, 42, 0.08);
     color: #1f2937;
+    display: grid;
+    grid-template-columns: var(--tracker-col-move-no) minmax(var(--tracker-col-side-min), 1fr) minmax(var(--tracker-col-side-min), 1fr);
+    align-items: center;
+    column-gap: 12px;
+    white-space: nowrap;
+    font-family: 'Lato', sans-serif;
+}
+
+.move-item-header {
+    font-weight: 700;
+    background: rgba(226, 232, 240, 0.7);
+}
+
+.move-cell {
+    display: inline-flex;
+    align-items: center;
+}
+
+.move-number {
+    justify-content: center;
+}
+
+.move-white,
+.move-black {
+    justify-content: flex-start;
 }
 
 .move-item:hover {
@@ -530,37 +565,23 @@ body {
 .move-tracker.white-side {
     background: linear-gradient(120deg, rgba(255, 255, 255, 0.98), rgba(242, 246, 252, 0.98));
     border-right: 3px solid rgba(37, 99, 235, 0.4);
-}
-
-.move-tracker.white-side .moves-list {
-    align-items: flex-end;
-}
-
-.move-tracker.white-side .move-item {
-    text-align: right;
+    transform: rotate(-90deg);
 }
 
 .move-tracker.white-side h3 {
-    text-align: right;
-    padding-right: 14px;
+    text-align: center;
+    padding-right: 12px;
 }
 
 .move-tracker.black-side {
     background: linear-gradient(240deg, rgba(255, 255, 255, 0.98), rgba(242, 246, 252, 0.98));
     border-left: 3px solid rgba(17, 24, 39, 0.35);
-}
-
-.move-tracker.black-side .moves-list {
-    align-items: flex-start;
-}
-
-.move-tracker.black-side .move-item {
-    text-align: left;
+    transform: rotate(90deg);
 }
 
 .move-tracker.black-side h3 {
-    text-align: left;
-    padding-left: 14px;
+    text-align: center;
+    padding-left: 12px;
 }
 
 body.dark-mode {
@@ -724,6 +745,10 @@ body.dark-mode .move-item {
     border-color: rgba(148, 163, 184, 0.2);
     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
     color: #e5e7eb;
+}
+
+body.dark-mode .move-item-header {
+    background: rgba(51, 65, 85, 0.85);
 }
 
 body.dark-mode .chess-board {
@@ -905,9 +930,8 @@ body.dark-mode .player-names {
     }
 
     .move-tracker {
-        width: 100%;
-        max-width: 500px;
-        height: 180px;
+        width: var(--tracker-mobile-width);
+        height: var(--tracker-mobile-height);
     }
 
     .games-grid {

@@ -205,6 +205,27 @@ function displayToBoardCoordinates(displayRow, displayCol) {
     return [7 - displayCol, displayRow];
 }
 
+function squareToAlgebraic(row, col) {
+    return `${String.fromCharCode(97 + col)}${8 - row}`;
+}
+
+function getChessAlgebraicNotation({ piece, fromRow, fromCol, toRow, toCol, isCapture, isCastling, isCheck, isMate, promotion }) {
+    if (isCastling) {
+        const castleNotation = toCol > fromCol ? 'O-O' : 'O-O-O';
+        return `${castleNotation}${isMate ? '#' : isCheck ? '+' : ''}`;
+    }
+
+    const lowerPiece = piece.toLowerCase();
+    const pieceLetter = lowerPiece === 'p' ? '' : piece.toUpperCase();
+    const destination = squareToAlgebraic(toRow, toCol);
+    const pawnCaptureFile = lowerPiece === 'p' && isCapture ? String.fromCharCode(97 + fromCol) : '';
+    const captureMarker = isCapture ? 'x' : '';
+    const promotionText = promotion ? `=${promotion.toUpperCase()}` : '';
+    const checkSuffix = isMate ? '#' : isCheck ? '+' : '';
+
+    return `${pieceLetter}${pawnCaptureFile}${captureMarker}${destination}${promotionText}${checkSuffix}`;
+}
+
 function renderChessBoard() {
     const boardEl = document.getElementById('chessBoard');
     boardEl.innerHTML = '';
@@ -402,6 +423,8 @@ function handleChessClick(row, col) {
         if (isValidChessMove(fR, fC, row, col) && isMoveLegal(fR, fC, row, col)) {
             const isEnPassant = p.toLowerCase() === 'p' && fC !== col && target === '.';
             const isCastling = p.toLowerCase() === 'k' && Math.abs(col - fC) === 2;
+            const isCapture = target !== '.' || isEnPassant;
+            let promotedTo = null;
 
             chessBoard[row][col] = p; chessBoard[fR][fC] = '.';
             if (isEnPassant) chessBoard[fR][col] = '.';
@@ -416,6 +439,7 @@ function handleChessClick(row, col) {
                 if (choice) choice = choice.toUpperCase();
                 if (!['Q', 'R', 'B', 'N'].includes(choice)) choice = 'Q'; // Default to Queen
                 chessBoard[row][col] = isWhite ? choice : choice.toLowerCase();
+                promotedTo = choice;
             }
 
             // Update Rights
@@ -425,24 +449,40 @@ function handleChessClick(row, col) {
             if (p === 'r') { if (fC === 0) castlingRights.bQ = false; if (fC === 7) castlingRights.bK = false; }
 
             // Log Move
-            const moveText = `${String.fromCharCode(97 + fC)}${8 - fR} to ${String.fromCharCode(97 + col)}${8 - row}`;
+            const opponentState = getChessGameState(!isWhite);
+            const moveText = getChessAlgebraicNotation({
+                piece: p,
+                fromRow: fR,
+                fromCol: fC,
+                toRow: row,
+                toCol: col,
+                isCapture,
+                isCastling,
+                isCheck: opponentState === 'check' || opponentState === 'checkmate',
+                isMate: opponentState === 'checkmate',
+                promotion: promotedTo
+            });
+            const moveEntry = {
+                pieceUnicode: PIECE_UNICODE[p],
+                notation: moveText
+            };
             if (isWhite) {
                 if (chessMoves.length > 0 && chessMoves[chessMoves.length - 1].white === null) {
-                    chessMoves[chessMoves.length - 1].white = moveText;
+                    chessMoves[chessMoves.length - 1].white = moveEntry;
                 } else {
-                    chessMoves.push({ white: moveText, black: null });
+                    chessMoves.push({ white: moveEntry, black: null });
                 }
             } else {
                 if (chessMoves.length === 0 || chessMoves[chessMoves.length - 1].black !== null) {
-                    chessMoves.push({ white: null, black: moveText });
+                    chessMoves.push({ white: null, black: moveEntry });
                 } else {
-                    chessMoves[chessMoves.length - 1].black = moveText;
+                    chessMoves[chessMoves.length - 1].black = moveEntry;
                 }
             }
             lastMove = { fromRow: fR, fromCol: fC, toRow: row, toCol: col, piece: p };
             chessWhiteToMove = !chessWhiteToMove;
             chessSelectedSquare = null;
-            updateChessStatus();
+            updateChessStatus(opponentState);
             renderChessBoard();
             renderMoveTrackers();
         } else {
@@ -457,8 +497,7 @@ function handleChessClick(row, col) {
     }
 }
 
-function updateChessStatus() {
-    const state = getChessGameState(chessWhiteToMove);
+function updateChessStatus(state = getChessGameState(chessWhiteToMove)) {
     const side = chessWhiteToMove ? 'White' : 'Black';
     const winner = chessWhiteToMove ? 'Black' : 'White';
 
@@ -474,7 +513,7 @@ function updateChessStatus() {
 
     if (chessMoves.length > 0) {
         const latestRound = chessMoves[chessMoves.length - 1];
-        const latestMove = latestRound.black || latestRound.white;
+        const latestMove = latestRound.black?.notation || latestRound.white?.notation;
         chessMoveLog.textContent = `Last move: ${latestMove}`;
     } else {
         chessMoveLog.textContent = '';
@@ -486,20 +525,53 @@ function renderMoveTrackers() {
     whiteMovesList.innerHTML = '';
     blackMovesList.innerHTML = '';
 
-    chessMoves.forEach((round, index) => {
-        if (round.white !== null) {
-            const whiteItem = document.createElement('div');
-            whiteItem.className = 'move-item';
-            whiteItem.textContent = `${index + 1}. ${round.white}`;
-            whiteMovesList.appendChild(whiteItem);
-        }
+    const createHeaderRow = () => {
+        const header = document.createElement('div');
+        header.className = 'move-item move-item-header';
 
-        if (round.black !== null) {
-            const blackItem = document.createElement('div');
-            blackItem.className = 'move-item';
-            blackItem.textContent = `${index + 1}. ${round.black}`;
-            blackMovesList.appendChild(blackItem);
-        }
+        const moveNo = document.createElement('span');
+        moveNo.className = 'move-cell move-number';
+        moveNo.textContent = 'Move';
+
+        const whiteMove = document.createElement('span');
+        whiteMove.className = 'move-cell move-white';
+        whiteMove.textContent = 'White';
+
+        const blackMove = document.createElement('span');
+        blackMove.className = 'move-cell move-black';
+        blackMove.textContent = 'Black';
+
+        header.appendChild(moveNo);
+        header.appendChild(whiteMove);
+        header.appendChild(blackMove);
+        return header;
+    };
+
+    whiteMovesList.appendChild(createHeaderRow());
+    blackMovesList.appendChild(createHeaderRow());
+
+    chessMoves.forEach((round, index) => {
+        const moveRow = document.createElement('div');
+        moveRow.className = 'move-item';
+
+        const moveNo = document.createElement('span');
+        moveNo.className = 'move-cell move-number';
+        moveNo.textContent = `${index + 1}.`;
+
+        const whiteMove = document.createElement('span');
+        whiteMove.className = 'move-cell move-white';
+        whiteMove.textContent = round.white ? `${round.white.pieceUnicode} ${round.white.notation}` : '—';
+
+        const blackMove = document.createElement('span');
+        blackMove.className = 'move-cell move-black';
+        blackMove.textContent = round.black ? `${round.black.pieceUnicode} ${round.black.notation}` : '—';
+
+        moveRow.appendChild(moveNo);
+        moveRow.appendChild(whiteMove);
+        moveRow.appendChild(blackMove);
+
+        whiteMovesList.appendChild(moveRow.cloneNode(true));
+        blackMovesList.appendChild(moveRow);
     });
 
     whiteMovesList.scrollTop = whiteMovesList.scrollHeight;
