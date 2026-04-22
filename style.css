@@ -26,6 +26,8 @@
     --tracker-base-height: 420px;
     --tracker-mobile-width: 200px;
     --tracker-mobile-height: 340px;
+    --tracker-col-move-no: 60px;
+    --tracker-col-side-min: 120px;
 }
 
 body {
@@ -529,7 +531,7 @@ body {
     box-shadow: 0 3px 8px rgba(15, 23, 42, 0.08);
     color: #1f2937;
     display: grid;
-    grid-template-columns: 60px minmax(120px, 1fr) minmax(120px, 1fr);
+    grid-template-columns: var(--tracker-col-move-no) minmax(var(--tracker-col-side-min), 1fr) minmax(var(--tracker-col-side-min), 1fr);
     align-items: center;
     column-gap: 12px;
     white-space: nowrap;

@@ -482,7 +482,7 @@ function handleChessClick(row, col) {
             lastMove = { fromRow: fR, fromCol: fC, toRow: row, toCol: col, piece: p };
             chessWhiteToMove = !chessWhiteToMove;
             chessSelectedSquare = null;
-            updateChessStatus();
+            updateChessStatus(opponentState);
             renderChessBoard();
             renderMoveTrackers();
         } else {
@@ -497,8 +497,7 @@ function handleChessClick(row, col) {
     }
 }
 
-function updateChessStatus() {
-    const state = getChessGameState(chessWhiteToMove);
+function updateChessStatus(state = getChessGameState(chessWhiteToMove)) {
     const side = chessWhiteToMove ? 'White' : 'Black';
     const winner = chessWhiteToMove ? 'Black' : 'White';
 
