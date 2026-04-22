@@ -427,11 +427,17 @@ function handleChessClick(row, col) {
             // Log Move
             const moveText = `${String.fromCharCode(97 + fC)}${8 - fR} to ${String.fromCharCode(97 + col)}${8 - row}`;
             if (isWhite) {
-                chessMoves.push({ white: moveText, black: '' });
-            } else if (chessMoves.length > 0) {
-                chessMoves[chessMoves.length - 1].black = moveText;
+                if (chessMoves.length > 0 && chessMoves[chessMoves.length - 1].white === null) {
+                    chessMoves[chessMoves.length - 1].white = moveText;
+                } else {
+                    chessMoves.push({ white: moveText, black: null });
+                }
             } else {
-                chessMoves.push({ white: '', black: moveText });
+                if (chessMoves.length === 0 || chessMoves[chessMoves.length - 1].black !== null) {
+                    chessMoves.push({ white: null, black: moveText });
+                } else {
+                    chessMoves[chessMoves.length - 1].black = moveText;
+                }
             }
             lastMove = { fromRow: fR, fromCol: fC, toRow: row, toCol: col, piece: p };
             chessWhiteToMove = !chessWhiteToMove;
@@ -481,7 +487,7 @@ function renderMoveTrackers() {
     blackMovesList.innerHTML = '';
 
     chessMoves.forEach((round, index) => {
-        if (round.white) {
+        if (round.white !== null) {
             const whiteItem = document.createElement('div');
             whiteItem.className = 'move-item';
             whiteItem.textContent = `${index + 1}. ${round.white}`;
@@ -491,7 +497,7 @@ function renderMoveTrackers() {
         if (round.black) {
             const blackItem = document.createElement('div');
             blackItem.className = 'move-item';
-            blackItem.textContent = `${index + 1}... ${round.black}`;
+            blackItem.textContent = `${index + 1}. ${round.black}`;
             blackMovesList.appendChild(blackItem);
         }
     });
