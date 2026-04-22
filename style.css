@@ -28,6 +28,7 @@
     --tracker-mobile-height: 340px;
     --tracker-col-move-no: 60px;
     --tracker-col-side-min: 120px;
+    --tracker-side-padding: 50px;
 }
 
 body {
@@ -382,11 +383,12 @@ body {
 }
 
 .chess-game-layout {
-    width: min(100%, 980px);
+    width: min(100vw, 1180px);
     display: grid;
-    grid-template-columns: minmax(var(--tracker-side-min), var(--tracker-side-max)) minmax(300px, 1fr) minmax(var(--tracker-side-min), var(--tracker-side-max));
+    grid-template-columns: minmax(var(--tracker-side-min), 1fr) minmax(300px, 560px) minmax(var(--tracker-side-min), 1fr);
     align-items: stretch;
     gap: 16px;
+    padding-inline: var(--tracker-side-padding);
 }
 
 .chess-board {
@@ -487,8 +489,8 @@ body {
 }
 
 .move-tracker {
-    width: var(--tracker-base-width - 10);
-    height: var(--tracker-base-height - 10);
+    width: min(100%, calc(var(--tracker-base-width) - 10px));
+    height: calc(var(--tracker-base-height) - 10px);
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(246, 248, 252, 0.98));
     border: 1px solid rgba(17, 24, 39, 0.08);
     border-radius: 14px;
@@ -516,6 +518,7 @@ body {
 .moves-list {
     flex: 1;
     overflow-y: auto;
+    overflow-x: hidden;
     padding: 10px 12px;
     display: flex;
     flex-direction: column;
@@ -927,6 +930,7 @@ body.dark-mode .player-names {
     .chess-game-layout {
         grid-template-columns: 1fr;
         width: 100%;
+        padding-inline: 0;
     }
 
     .move-tracker {
