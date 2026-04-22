@@ -29,6 +29,7 @@
     --tracker-col-move-no: 60px;
     --tracker-col-side-min: 120px;
     --tracker-side-padding: 50px;
+    --chess-board-min: 300px;
     --chess-board-max: 560px;
     --tracker-size-offset: 10px;
 }
@@ -387,7 +388,7 @@ body {
 .chess-game-layout {
     width: min(100%, 1180px);
     display: grid;
-    grid-template-columns: minmax(var(--tracker-side-min), 1fr) minmax(300px, var(--chess-board-max)) minmax(var(--tracker-side-min), 1fr);
+    grid-template-columns: minmax(var(--tracker-side-min), 1fr) minmax(var(--chess-board-min), var(--chess-board-max)) minmax(var(--tracker-side-min), 1fr);
     align-items: stretch;
     gap: 16px;
     padding-inline: var(--tracker-side-padding);
