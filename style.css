@@ -395,19 +395,20 @@ body {
     user-select: none;
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
     transition: transform 0.1s ease;
+    display: inline-block;
+    transform: rotate(90deg);
 }
 
 .chess-piece.black-piece {
-    display: inline-block;
-    transform: rotate(180deg);
+    transform: rotate(270deg);
 }
 
 .chess-piece:hover {
-    transform: scale(1.1);
+    transform: rotate(90deg) scale(1.1);
 }
 
 .chess-piece.black-piece:hover {
-    transform: rotate(180deg) scale(1.1);
+    transform: rotate(270deg) scale(1.1);
 }
 
 .chess-legend {
