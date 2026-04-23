@@ -492,8 +492,9 @@ body {
 }
 
 .move-tracker {
-    width: min(100%, calc(var(--tracker-base-width) - var(--tracker-size-offset)-3));
-    height: calc(var(--tracker-base-height) - var(--tracker-size-offset) + 10);
+    width: min(100%, calc(var(--tracker-base-width) - var(--tracker-size-offset) - 1));
+    /*height: calc(var(--tracker-base-height) - var(--tracker-size-offset));*/
+    max-height: calc(var(--tracker-base-height) - var(--tracker-size-offset) - 200px) ;
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(246, 248, 252, 0.98));
     border: 1px solid rgba(17, 24, 39, 0.08);
     border-radius: 14px;
