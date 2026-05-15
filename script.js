@@ -752,12 +752,10 @@ function rollLudoDice() {
     if (movable.length === 0) {
         if (ludoDiceValue === 6) {
             ludoDiceValue = null;
-            if (ludoDiceValueDisplay) ludoDiceValueDisplay.textContent = '-';
             ludoHasRolled = false;
             setLudoStatus(`${activeLabel} rolled 6 but has no valid move. Bonus roll again.`);
         } else {
             ludoDiceValue = null;
-            if (ludoDiceValueDisplay) ludoDiceValueDisplay.textContent = '-';
             ludoHasRolled = false;
             setLudoStatus(`${activeLabel} has no valid move. Next player's turn.`);
             advanceLudoTurn();
@@ -937,18 +935,25 @@ function renderLudoBoard() {
 
                 const slots = document.createElement('div');
                 slots.className = 'ludo-base-slots';
+                const isActiveBasePlayer = ludoPlayers.includes(baseColor);
 
                 for (let slotIndex = 0; slotIndex < 4; slotIndex++) {
                     const slot = document.createElement('div');
                     slot.className = 'ludo-base-slot';
-                    const tokenProgress = ludoTokens[baseColor][slotIndex];
-                    if (tokenProgress === -1) {
-                        const tokenEl = document.createElement('div');
-                        tokenEl.className = `ludo-token ${baseColor}`;
-                        if (!ludoWinner && baseColor === activeColor && movableTokens.includes(slotIndex)) {
-                            tokenEl.classList.add('clickable');
-                            tokenEl.addEventListener('click', () => handleLudoTokenClick(baseColor, slotIndex));
+                    if (isActiveBasePlayer) {
+                        const tokenProgress = ludoTokens[baseColor][slotIndex];
+                        if (tokenProgress === -1) {
+                            const tokenEl = document.createElement('div');
+                            tokenEl.className = `ludo-token ${baseColor}`;
+                            if (!ludoWinner && baseColor === activeColor && movableTokens.includes(slotIndex)) {
+                                tokenEl.classList.add('clickable');
+                                tokenEl.addEventListener('click', () => handleLudoTokenClick(baseColor, slotIndex));
+                            }
+                            slot.appendChild(tokenEl);
                         }
+                    } else {
+                        const tokenEl = document.createElement('div');
+                        tokenEl.className = `ludo-token ${baseColor} inactive`;
                         slot.appendChild(tokenEl);
                     }
                     slots.appendChild(slot);

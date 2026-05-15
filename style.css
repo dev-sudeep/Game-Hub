@@ -907,8 +907,12 @@ body.dark-mode .player-names {
 }
 
 .ludo-base-slot .ludo-token {
-    width: 100%;
-    height: 100%;
+    width: min(100%, 32px);
+    height: min(100%, 32px);
+}
+
+.ludo-token.inactive {
+    opacity: 0.4;
 }
 
 .ludo-square.home-lane.red { background: #feb2b2; }
@@ -994,6 +998,10 @@ body.dark-mode .ludo-square.home-lane.blue { background: #1d4ed8; }
 
 body.dark-mode .ludo-token.clickable {
     box-shadow: 0 0 0 2px #cbd5e1;
+}
+
+body.dark-mode .ludo-token.inactive {
+    opacity: 0.3;
 }
 
 /* Ludo Setup Styles */
