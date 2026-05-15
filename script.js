@@ -78,6 +78,9 @@ const LUDO_BASE_ANCHORS = {
 const LUDO_SAFE_INDICES = new Set([0, 13, 26, 39]);
 const LUDO_CENTER = [7, 7];
 const LUDO_DICE_SYMBOLS = ['', '⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+const LUDO_MAIN_TRACK_LAST_PROGRESS = 50;
+const LUDO_HOME_START_PROGRESS = 51;
+const LUDO_FINISH_PROGRESS = 56;
 
 let ludoPlayerCount = 0;
 let ludoPlayers = [];
@@ -778,14 +781,14 @@ function getMovableLudoTokens(color, diceValue) {
     const movable = [];
 
     tokenList.forEach((progress, tokenIndex) => {
-        if (progress === 57) return;
+        if (progress === LUDO_FINISH_PROGRESS) return;
         if (progress === -1) {
             if (diceValue === 6) movable.push(tokenIndex);
             return;
         }
 
         const nextProgress = progress + diceValue;
-        if (nextProgress <= 57) movable.push(tokenIndex);
+        if (nextProgress <= LUDO_FINISH_PROGRESS) movable.push(tokenIndex);
     });
 
     return movable;
@@ -809,13 +812,13 @@ function moveLudoToken(color, tokenIndex, diceValue) {
     tokenList[tokenIndex] = progress;
     let captureText = '';
 
-    if (progress <= 51) {
+    if (progress <= LUDO_MAIN_TRACK_LAST_PROGRESS) {
         const pathIndex = (LUDO_PLAYER_META[color].startIndex + progress) % 52;
         if (!LUDO_SAFE_INDICES.has(pathIndex)) {
             ludoPlayers.forEach(opponentColor => {
                 if (opponentColor === color) return;
                 ludoTokens[opponentColor] = ludoTokens[opponentColor].map(opponentProgress => {
-                    if (opponentProgress < 0 || opponentProgress > 51) return opponentProgress;
+                    if (opponentProgress < 0 || opponentProgress > LUDO_MAIN_TRACK_LAST_PROGRESS) return opponentProgress;
                     const opponentPathIndex = (LUDO_PLAYER_META[opponentColor].startIndex + opponentProgress) % 52;
                     if (opponentPathIndex === pathIndex) {
                         captureText = ` ${LUDO_PLAYER_META[color].label} captured ${LUDO_PLAYER_META[opponentColor].label}!`;
@@ -829,7 +832,7 @@ function moveLudoToken(color, tokenIndex, diceValue) {
 
     const activeLabel = LUDO_PLAYER_META[color].label;
 
-    if (tokenList.every(tokenProgress => tokenProgress === 57)) {
+    if (tokenList.every(tokenProgress => tokenProgress === LUDO_FINISH_PROGRESS)) {
         ludoWinner = color;
         ludoHasRolled = false;
         ludoDiceValue = null;
@@ -861,12 +864,12 @@ function advanceLudoTurn() {
 
 function getLudoTokenCoordinate(color, progress, tokenIndex) {
     if (progress === -1) return LUDO_BASE_SLOTS[color][tokenIndex];
-    if (progress === 57) return LUDO_CENTER;
-    if (progress <= 51) {
+    if (progress === LUDO_FINISH_PROGRESS) return LUDO_CENTER;
+    if (progress <= LUDO_MAIN_TRACK_LAST_PROGRESS) {
         const pathIndex = (LUDO_PLAYER_META[color].startIndex + progress) % 52;
         return LUDO_MAIN_PATH[pathIndex];
     }
-    return LUDO_HOME_LANES[color][progress - 52];
+    return LUDO_HOME_LANES[color][progress - LUDO_HOME_START_PROGRESS];
 }
 
 function isCellInBaseArea(row, col, color) {
