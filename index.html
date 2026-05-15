@@ -58,6 +58,12 @@
                     <p class="game-description">Two-player strategy game. Checkmate your opponent!</p>
                     <button class="play-btn">Play</button>
                 </div>
+
+                <div class="game-card" id="ludoCard">
+                    <h2>Ludo</h2>
+                    <p class="game-description">Race 4 tokens home. Choose 2-4 players!</p>
+                    <button class="play-btn">Play</button>
+                </div>
             </div>
         </div>
     </div>
@@ -120,6 +126,59 @@
             <div class="chess-legend">
                 <p><strong>White (Left)</strong> vs <strong>Black (Right)</strong></p>
                 <p id="chessMoveLog"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ludo Setup Page -->
+    <div id="ludoSetupPage" class="game-container hidden">
+        <div class="game-header">
+            <button class="back-btn" id="backFromLudoSetup">← Back</button>
+            <h1>Ludo</h1>
+            <button class="logout-btn" id="logoutBtn5">Logout</button>
+        </div>
+
+        <div class="setup-content">
+            <p class="setup-subtitle">Select number of players</p>
+            <div class="player-selection">
+                <button class="player-btn ludo-player-btn" data-players="2">
+                    <span class="player-count">2 Players</span>
+                    <span class="player-names">Red vs Green</span>
+                </button>
+                <button class="player-btn ludo-player-btn" data-players="3">
+                    <span class="player-count">3 Players</span>
+                    <span class="player-names">Red vs Green vs Yellow</span>
+                </button>
+                <button class="player-btn ludo-player-btn" data-players="4">
+                    <span class="player-count">4 Players</span>
+                    <span class="player-names">Red vs Green vs Yellow vs Blue</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ludo Game Page -->
+    <div id="ludoGamePage" class="game-container hidden">
+        <div class="game-header">
+            <button class="back-btn" id="backFromLudoGame">← Back</button>
+            <h1>Ludo</h1>
+            <button class="logout-btn" id="logoutBtn6">Logout</button>
+        </div>
+
+        <div class="ludo-container">
+            <div class="ludo-info">
+                <p id="ludoStatus">Select players to start.</p>
+                <div class="ludo-controls">
+                    <button class="reset-btn" id="ludoRollBtn">Roll Dice</button>
+                    <span id="ludoDiceValue" class="ludo-dice">-</span>
+                    <button class="reset-btn" id="ludoResetBtn">Reset Game</button>
+                </div>
+            </div>
+
+            <div class="ludo-board" id="ludoBoard"></div>
+
+            <div class="ludo-legend">
+                <p><strong>Rules:</strong> Roll 6 to leave base, capture opponents on track, exact roll to finish.</p>
             </div>
         </div>
     </div>

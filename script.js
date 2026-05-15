@@ -39,14 +39,65 @@ const PIECE_UNICODE = {
     'k': '♚', 'q': '♛', 'r': '♜', 'b': '♝', 'n': '♞', 'p': '♟'
 };
 
+// === LUDO STATE ===
+const LUDO_COLOR_ORDER = ['red', 'green', 'yellow', 'blue'];
+const LUDO_PLAYER_META = {
+    red: { startIndex: 0, label: 'Red' },
+    green: { startIndex: 13, label: 'Green' },
+    yellow: { startIndex: 26, label: 'Yellow' },
+    blue: { startIndex: 39, label: 'Blue' }
+};
+
+const LUDO_MAIN_PATH = [
+    [6, 1], [6, 2], [6, 3], [6, 4], [6, 5], [5, 6], [4, 6], [3, 6], [2, 6], [1, 6], [0, 6], [0, 7], [0, 8],
+    [1, 8], [2, 8], [3, 8], [4, 8], [5, 8], [6, 9], [6, 10], [6, 11], [6, 12], [6, 13], [6, 14], [7, 14], [8, 14],
+    [8, 13], [8, 12], [8, 11], [8, 10], [8, 9], [9, 8], [10, 8], [11, 8], [12, 8], [13, 8], [14, 8], [14, 7], [14, 6],
+    [13, 6], [12, 6], [11, 6], [10, 6], [9, 6], [8, 5], [8, 4], [8, 3], [8, 2], [8, 1], [8, 0], [7, 0], [6, 0]
+];
+
+const LUDO_HOME_LANES = {
+    red: [[7, 1], [7, 2], [7, 3], [7, 4], [7, 5]],
+    green: [[1, 7], [2, 7], [3, 7], [4, 7], [5, 7]],
+    yellow: [[7, 13], [7, 12], [7, 11], [7, 10], [7, 9]],
+    blue: [[13, 7], [12, 7], [11, 7], [10, 7], [9, 7]]
+};
+
+const LUDO_BASE_SLOTS = {
+    red: [[2, 2], [2, 4], [4, 2], [4, 4]],
+    green: [[2, 10], [2, 12], [4, 10], [4, 12]],
+    yellow: [[10, 10], [10, 12], [12, 10], [12, 12]],
+    blue: [[10, 2], [10, 4], [12, 2], [12, 4]]
+};
+const LUDO_BASE_ANCHORS = {
+    red: [0, 0],
+    green: [0, 9],
+    yellow: [9, 9],
+    blue: [9, 0]
+};
+
+const LUDO_SAFE_INDICES = new Set([0, 13, 26, 39]);
+const LUDO_CENTER = [7, 7];
+
+let ludoPlayerCount = 0;
+let ludoPlayers = [];
+let ludoCurrentPlayerIndex = 0;
+let ludoTokens = {};
+let ludoDiceValue = null;
+let ludoHasRolled = false;
+let ludoConsecutiveSixes = 0;
+let ludoWinner = null;
+
 // DOM elements
 const loginPage = document.getElementById('loginPage');
 const gameSelectionPage = document.getElementById('gameSelectionPage');
 const tictactoeGamePage = document.getElementById('tictactoeGamePage');
 const chessGamePage = document.getElementById('chessGamePage');
+const ludoSetupPage = document.getElementById('ludoSetupPage');
+const ludoGamePage = document.getElementById('ludoGamePage');
 
 const tictactoeCard = document.getElementById('tictactoeCard');
 const chessCard = document.getElementById('chessCard');
+const ludoCard = document.getElementById('ludoCard');
 
 const cells = document.querySelectorAll('.cell');
 const statusDisplay = document.getElementById('tictactoeStatus');
@@ -56,12 +107,23 @@ const chessStatusDisplay = document.getElementById('chessStatus');
 const chessResetBtn = document.getElementById('chessResetBtn');
 const chessMoveLog = document.getElementById('chessMoveLog');
 
+const ludoStatusDisplay = document.getElementById('ludoStatus');
+const ludoRollBtn = document.getElementById('ludoRollBtn');
+const ludoResetBtn = document.getElementById('ludoResetBtn');
+const ludoDiceValueDisplay = document.getElementById('ludoDiceValue');
+const ludoBoardEl = document.getElementById('ludoBoard');
+const ludoPlayerButtons = document.querySelectorAll('.ludo-player-btn');
+
 const backFromTictactoeBtn = document.getElementById('backFromTictactoe');
 const backFromChessBtn = document.getElementById('backFromChess');
+const backFromLudoSetupBtn = document.getElementById('backFromLudoSetup');
+const backFromLudoGameBtn = document.getElementById('backFromLudoGame');
 
 const logoutBtn2 = document.getElementById('logoutBtn2');
 const logoutBtn3 = document.getElementById('logoutBtn3');
 const logoutBtn4 = document.getElementById('logoutBtn4');
+const logoutBtn5 = document.getElementById('logoutBtn5');
+const logoutBtn6 = document.getElementById('logoutBtn6');
 
 const guestLoginBtn = document.getElementById('guestLoginBtn');
 const guestNameInput = document.getElementById('guestName');
@@ -69,6 +131,19 @@ const themeToggleBtn = document.getElementById('themeToggle');
 const whiteMovesList = document.getElementById('whiteMovesList');
 const blackMovesList = document.getElementById('blackMovesList');
 const THEME_STORAGE_KEY = 'gamehub-theme';
+
+const ludoPathIndexByKey = new Map();
+const ludoHomeLaneByKey = new Map();
+
+LUDO_MAIN_PATH.forEach(([row, col], index) => {
+    ludoPathIndexByKey.set(`${row},${col}`, index);
+});
+
+Object.entries(LUDO_HOME_LANES).forEach(([color, lane]) => {
+    lane.forEach(([row, col]) => {
+        ludoHomeLaneByKey.set(`${row},${col}`, color);
+    });
+});
 
 if (guestLoginBtn) {
     guestLoginBtn.addEventListener('click', function() {
@@ -101,6 +176,9 @@ function handleLogout() {
     gameSelectionPage.classList.add('hidden');
     tictactoeGamePage.classList.add('hidden');
     chessGamePage.classList.add('hidden');
+    ludoSetupPage.classList.add('hidden');
+    ludoGamePage.classList.add('hidden');
+    resetLudoState();
     if (window.google) google.accounts.id.disableAutoSelect();
 }
 
@@ -117,6 +195,19 @@ chessCard.addEventListener('click', function() {
     chessGamePage.classList.remove('hidden');
     initializeChess();
 });
+
+if (ludoCard) {
+    ludoCard.addEventListener('click', openLudoSetup);
+}
+
+if (ludoPlayerButtons.length > 0) {
+    ludoPlayerButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const selectedPlayers = Number(button.dataset.players);
+            startLudoGame(selectedPlayers);
+        });
+    });
+}
 
 // === TIC TAC TOE FUNCTIONS ===
 function initializeTictactoe() {
@@ -150,7 +241,7 @@ function handleCellClick(e) {
         return;
     }
 
-    if (board.every(cell => cell !== '')) {
+    if (board.every(currentCell => currentCell !== '')) {
         gameActive = false;
         statusDisplay.textContent = 'Draw';
         disableBoard();
@@ -266,12 +357,12 @@ function isValidPawnMove(fromR, fromC, toR, toC, piece) {
     const isWhite = piece === piece.toUpperCase();
     const dir = isWhite ? -1 : 1;
     const target = chessBoard[toR][toC];
-    
+
     if (toC === fromC && target === '.') {
         if (toR === fromR + dir) return true;
         if (fromR === (isWhite ? 6 : 1) && toR === fromR + 2 * dir) return isPathClear(fromR, fromC, toR, toC);
     }
-    
+
     if (Math.abs(toC - fromC) === 1 && toR === fromR + dir) {
         if (target !== '.' && (target === target.toUpperCase() !== isWhite)) return true;
         if (target === '.' && lastMove && lastMove.piece.toLowerCase() === 'p') {
@@ -294,7 +385,7 @@ function isValidChessMove(fR, fC, tR, tC) {
         case 'b': return rDiff === cDiff && isPathClear(fR, fC, tR, tC);
         case 'r': return (fR === tR || fC === tC) && isPathClear(fR, fC, tR, tC);
         case 'q': return (rDiff === cDiff || fR === tR || fC === tC) && isPathClear(fR, fC, tR, tC);
-        case 'k': 
+        case 'k':
             if (rDiff <= 1 && cDiff <= 1) return true;
             if (fR === tR && cDiff === 2) {
                 const row = isWhite ? 7 : 0;
@@ -317,7 +408,7 @@ function isPieceAttackingSquare(fR, fC, tR, tC) {
     const lower = piece.toLowerCase();
     const isWhite = piece === piece.toUpperCase();
     const rDiff = Math.abs(tR - fR), cDiff = Math.abs(tC - fC);
-    const rDir = tR - fR, cDir = tC - fC;
+    const rDir = tR - fR;
 
     switch (lower) {
         case 'p': {
@@ -433,22 +524,19 @@ function handleChessClick(row, col) {
                 chessBoard[row][nextC] = chessBoard[row][rookC]; chessBoard[row][rookC] = '.';
             }
 
-            // --- PAWN PROMOTION ---
             if (p.toLowerCase() === 'p' && (row === 0 || row === 7)) {
-                let choice = prompt("Pawn Promotion! Enter Q for Queen, R for Rook, B for Bishop, or N for Knight:");
+                let choice = prompt('Pawn Promotion! Enter Q for Queen, R for Rook, B for Bishop, or N for Knight:');
                 if (choice) choice = choice.toUpperCase();
-                if (!['Q', 'R', 'B', 'N'].includes(choice)) choice = 'Q'; // Default to Queen
+                if (!['Q', 'R', 'B', 'N'].includes(choice)) choice = 'Q';
                 chessBoard[row][col] = isWhite ? choice : choice.toLowerCase();
                 promotedTo = choice;
             }
 
-            // Update Rights
             if (p === 'K') { castlingRights.wK = false; castlingRights.wQ = false; }
             if (p === 'k') { castlingRights.bK = false; castlingRights.bQ = false; }
             if (p === 'R') { if (fC === 0) castlingRights.wQ = false; if (fC === 7) castlingRights.wK = false; }
             if (p === 'r') { if (fC === 0) castlingRights.bQ = false; if (fC === 7) castlingRights.bK = false; }
 
-            // Log Move
             const opponentState = getChessGameState(!isWhite);
             const moveText = getChessAlgebraicNotation({
                 piece: p,
@@ -580,6 +668,337 @@ function renderMoveTrackers() {
 
 function resetChess() { initializeChess(); }
 
+// === LUDO FUNCTIONS ===
+function openLudoSetup() {
+    currentGame = 'ludo';
+    gameSelectionPage.classList.add('hidden');
+    ludoGamePage.classList.add('hidden');
+    ludoSetupPage.classList.remove('hidden');
+}
+
+function resetLudoState() {
+    ludoPlayerCount = 0;
+    ludoPlayers = [];
+    ludoCurrentPlayerIndex = 0;
+    ludoTokens = {};
+    ludoDiceValue = null;
+    ludoHasRolled = false;
+    ludoConsecutiveSixes = 0;
+    ludoWinner = null;
+    if (ludoDiceValueDisplay) ludoDiceValueDisplay.textContent = '-';
+    if (ludoStatusDisplay) ludoStatusDisplay.textContent = 'Select players to start.';
+    if (ludoBoardEl) ludoBoardEl.innerHTML = '';
+}
+
+function initializeLudoState(playerCount) {
+    ludoPlayerCount = playerCount;
+    ludoPlayers = LUDO_COLOR_ORDER.slice(0, playerCount);
+    ludoCurrentPlayerIndex = 0;
+    ludoTokens = {};
+    ludoPlayers.forEach(color => {
+        ludoTokens[color] = [-1, -1, -1, -1];
+    });
+    ludoDiceValue = null;
+    ludoHasRolled = false;
+    ludoConsecutiveSixes = 0;
+    ludoWinner = null;
+}
+
+function startLudoGame(playerCount) {
+    initializeLudoState(playerCount);
+    ludoSetupPage.classList.add('hidden');
+    ludoGamePage.classList.remove('hidden');
+    renderLudoBoard();
+    setLudoStatus(`${getCurrentLudoLabel()}'s turn. Roll the dice to start.`);
+}
+
+function getCurrentLudoColor() {
+    return ludoPlayers[ludoCurrentPlayerIndex];
+}
+
+function getCurrentLudoLabel() {
+    const color = getCurrentLudoColor();
+    return color ? LUDO_PLAYER_META[color].label : '';
+}
+
+function setLudoStatus(message) {
+    if (ludoStatusDisplay) ludoStatusDisplay.textContent = message;
+}
+
+function rollLudoDice() {
+    if (!isLoggedIn || currentGame !== 'ludo' || ludoWinner || !ludoPlayers.length) return;
+    if (ludoHasRolled) return;
+
+    const activeColor = getCurrentLudoColor();
+    const activeLabel = getCurrentLudoLabel();
+    ludoDiceValue = Math.floor(Math.random() * 6) + 1;
+    if (ludoDiceValueDisplay) ludoDiceValueDisplay.textContent = String(ludoDiceValue);
+
+    if (ludoDiceValue === 6) ludoConsecutiveSixes += 1;
+    else ludoConsecutiveSixes = 0;
+
+    if (ludoConsecutiveSixes === 3) {
+        ludoDiceValue = null;
+        if (ludoDiceValueDisplay) ludoDiceValueDisplay.textContent = '-';
+        ludoHasRolled = false;
+        ludoConsecutiveSixes = 0;
+        setLudoStatus(`${activeLabel} rolled three 6s. Turn forfeited.`);
+        advanceLudoTurn();
+        renderLudoBoard();
+        return;
+    }
+
+    const movable = getMovableLudoTokens(activeColor, ludoDiceValue);
+    if (movable.length === 0) {
+        if (ludoDiceValue === 6) {
+            ludoDiceValue = null;
+            if (ludoDiceValueDisplay) ludoDiceValueDisplay.textContent = '-';
+            ludoHasRolled = false;
+            setLudoStatus(`${activeLabel} rolled 6 but has no valid move. Bonus roll again.`);
+        } else {
+            ludoDiceValue = null;
+            if (ludoDiceValueDisplay) ludoDiceValueDisplay.textContent = '-';
+            ludoHasRolled = false;
+            setLudoStatus(`${activeLabel} has no valid move. Next player's turn.`);
+            advanceLudoTurn();
+        }
+        renderLudoBoard();
+        return;
+    }
+
+    ludoHasRolled = true;
+    setLudoStatus(`${activeLabel} rolled ${ludoDiceValue}. Select a token to move.`);
+    renderLudoBoard();
+}
+
+function getMovableLudoTokens(color, diceValue) {
+    const tokenList = ludoTokens[color] || [];
+    const movable = [];
+
+    tokenList.forEach((progress, tokenIndex) => {
+        if (progress === 57) return;
+        if (progress === -1) {
+            if (diceValue === 6) movable.push(tokenIndex);
+            return;
+        }
+
+        const nextProgress = progress + diceValue;
+        if (nextProgress <= 57) movable.push(tokenIndex);
+    });
+
+    return movable;
+}
+
+function handleLudoTokenClick(color, tokenIndex) {
+    if (!ludoHasRolled || ludoWinner || !ludoPlayers.length) return;
+    if (color !== getCurrentLudoColor()) return;
+    if (!getMovableLudoTokens(color, ludoDiceValue).includes(tokenIndex)) return;
+
+    moveLudoToken(color, tokenIndex, ludoDiceValue);
+}
+
+function moveLudoToken(color, tokenIndex, diceValue) {
+    const tokenList = ludoTokens[color];
+    let progress = tokenList[tokenIndex];
+
+    if (progress === -1) progress = 0;
+    else progress += diceValue;
+
+    tokenList[tokenIndex] = progress;
+    let captureText = '';
+
+    if (progress <= 51) {
+        const pathIndex = (LUDO_PLAYER_META[color].startIndex + progress) % 52;
+        if (!LUDO_SAFE_INDICES.has(pathIndex)) {
+            ludoPlayers.forEach(opponentColor => {
+                if (opponentColor === color) return;
+                ludoTokens[opponentColor] = ludoTokens[opponentColor].map(opponentProgress => {
+                    if (opponentProgress < 0 || opponentProgress > 51) return opponentProgress;
+                    const opponentPathIndex = (LUDO_PLAYER_META[opponentColor].startIndex + opponentProgress) % 52;
+                    if (opponentPathIndex === pathIndex) {
+                        captureText = ` ${LUDO_PLAYER_META[color].label} captured ${LUDO_PLAYER_META[opponentColor].label}!`;
+                        return -1;
+                    }
+                    return opponentProgress;
+                });
+            });
+        }
+    }
+
+    const activeLabel = LUDO_PLAYER_META[color].label;
+
+    if (tokenList.every(tokenProgress => tokenProgress === 57)) {
+        ludoWinner = color;
+        ludoHasRolled = false;
+        ludoDiceValue = null;
+        ludoConsecutiveSixes = 0;
+        if (ludoDiceValueDisplay) ludoDiceValueDisplay.textContent = '-';
+        setLudoStatus(`${activeLabel} wins the game!`);
+        renderLudoBoard();
+        return;
+    }
+
+    const rolledSix = diceValue === 6;
+    ludoHasRolled = false;
+    ludoDiceValue = null;
+    if (ludoDiceValueDisplay) ludoDiceValueDisplay.textContent = '-';
+
+    if (rolledSix) {
+        setLudoStatus(`${activeLabel} moved and earned a bonus roll.${captureText}`);
+    } else {
+        ludoConsecutiveSixes = 0;
+        advanceLudoTurn();
+        setLudoStatus(`${activeLabel} moved.${captureText} ${getCurrentLudoLabel()}'s turn.`);
+    }
+
+    renderLudoBoard();
+}
+
+function advanceLudoTurn() {
+    ludoCurrentPlayerIndex = (ludoCurrentPlayerIndex + 1) % ludoPlayers.length;
+    ludoConsecutiveSixes = 0;
+}
+
+function getLudoTokenCoordinate(color, progress, tokenIndex) {
+    if (progress === -1) return LUDO_BASE_SLOTS[color][tokenIndex];
+    if (progress === 57) return LUDO_CENTER;
+    if (progress <= 51) {
+        const pathIndex = (LUDO_PLAYER_META[color].startIndex + progress) % 52;
+        return LUDO_MAIN_PATH[pathIndex];
+    }
+    return LUDO_HOME_LANES[color][progress - 52];
+}
+
+function isCellInBaseArea(row, col, color) {
+    if (color === 'red') return row <= 5 && col <= 5;
+    if (color === 'green') return row <= 5 && col >= 9;
+    if (color === 'yellow') return row >= 9 && col >= 9;
+    if (color === 'blue') return row >= 9 && col <= 5;
+    return false;
+}
+
+function getBaseColorAtCell(row, col) {
+    for (const color of LUDO_COLOR_ORDER) {
+        if (isCellInBaseArea(row, col, color)) return color;
+    }
+    return null;
+}
+
+function isBaseAnchor(row, col, color) {
+    const [anchorRow, anchorCol] = LUDO_BASE_ANCHORS[color];
+    return row === anchorRow && col === anchorCol;
+}
+
+function buildLudoOccupancyMap() {
+    const occupancy = new Map();
+
+    ludoPlayers.forEach(color => {
+        ludoTokens[color].forEach((progress, tokenIndex) => {
+            if (progress === -1) return;
+            const [row, col] = getLudoTokenCoordinate(color, progress, tokenIndex);
+            const key = `${row},${col}`;
+            if (!occupancy.has(key)) occupancy.set(key, []);
+            occupancy.get(key).push({ color, tokenIndex });
+        });
+    });
+
+    return occupancy;
+}
+
+function renderLudoBoard() {
+    if (!ludoBoardEl) return;
+    ludoBoardEl.innerHTML = '';
+    if (!ludoPlayers.length) return;
+
+    const occupancy = buildLudoOccupancyMap();
+    const activeColor = getCurrentLudoColor();
+    const movableTokens = ludoHasRolled && activeColor ? getMovableLudoTokens(activeColor, ludoDiceValue) : [];
+
+    for (let row = 0; row < 15; row++) {
+        for (let col = 0; col < 15; col++) {
+            const key = `${row},${col}`;
+            const baseColor = getBaseColorAtCell(row, col);
+
+            if (baseColor && !isBaseAnchor(row, col, baseColor)) {
+                continue;
+            }
+
+            const square = document.createElement('div');
+            square.className = 'ludo-square';
+
+            if (row === LUDO_CENTER[0] && col === LUDO_CENTER[1]) {
+                square.classList.add('center');
+            }
+
+            if (baseColor) {
+                square.classList.add('base-block', baseColor);
+                square.style.gridRow = `${row + 1} / span 6`;
+                square.style.gridColumn = `${col + 1} / span 6`;
+
+                const slots = document.createElement('div');
+                slots.className = 'ludo-base-slots';
+
+                for (let slotIndex = 0; slotIndex < 4; slotIndex++) {
+                    const slot = document.createElement('div');
+                    slot.className = 'ludo-base-slot';
+                    const tokenProgress = ludoTokens[baseColor][slotIndex];
+                    if (tokenProgress === -1) {
+                        const tokenEl = document.createElement('div');
+                        tokenEl.className = `ludo-token ${baseColor}`;
+                        if (!ludoWinner && baseColor === activeColor && movableTokens.includes(slotIndex)) {
+                            tokenEl.classList.add('clickable');
+                            tokenEl.addEventListener('click', () => handleLudoTokenClick(baseColor, slotIndex));
+                        }
+                        slot.appendChild(tokenEl);
+                    }
+                    slots.appendChild(slot);
+                }
+
+                square.appendChild(slots);
+            }
+
+            if (ludoPathIndexByKey.has(key)) {
+                square.classList.add('path');
+                const pathIndex = ludoPathIndexByKey.get(key);
+                if (LUDO_SAFE_INDICES.has(pathIndex)) square.classList.add('safe');
+            }
+
+            if (ludoHomeLaneByKey.has(key)) {
+                square.classList.add('home-lane', ludoHomeLaneByKey.get(key));
+            }
+
+            const tokensOnSquare = baseColor ? [] : (occupancy.get(key) || []);
+            if (tokensOnSquare.length > 0 && !baseColor) {
+                const stack = document.createElement('div');
+                stack.className = 'ludo-token-stack';
+
+                tokensOnSquare.forEach(token => {
+                    const tokenEl = document.createElement('div');
+                    tokenEl.className = `ludo-token ${token.color}`;
+
+                    if (!ludoWinner && token.color === activeColor && movableTokens.includes(token.tokenIndex)) {
+                        tokenEl.classList.add('clickable');
+                        tokenEl.addEventListener('click', () => handleLudoTokenClick(token.color, token.tokenIndex));
+                    }
+
+                    stack.appendChild(tokenEl);
+                });
+
+                square.appendChild(stack);
+            }
+
+            ludoBoardEl.appendChild(square);
+        }
+    }
+}
+
+function resetLudoGame() {
+    if (!ludoPlayerCount) return;
+    initializeLudoState(ludoPlayerCount);
+    renderLudoBoard();
+    setLudoStatus(`${getCurrentLudoLabel()}'s turn. Roll the dice to start.`);
+}
+
 function applyTheme(theme) {
     const isDark = theme === 'dark';
     document.body.classList.toggle('dark-mode', isDark);
@@ -599,11 +1018,39 @@ function toggleTheme() {
 
 tictactoeResetBtn.addEventListener('click', resetTictactoe);
 chessResetBtn.addEventListener('click', resetChess);
-backFromTictactoeBtn.addEventListener('click', () => { tictactoeGamePage.classList.add('hidden'); gameSelectionPage.classList.remove('hidden'); });
-backFromChessBtn.addEventListener('click', () => { chessGamePage.classList.add('hidden'); gameSelectionPage.classList.remove('hidden'); });
+if (ludoRollBtn) ludoRollBtn.addEventListener('click', rollLudoDice);
+if (ludoResetBtn) ludoResetBtn.addEventListener('click', resetLudoGame);
+
+backFromTictactoeBtn.addEventListener('click', () => {
+    tictactoeGamePage.classList.add('hidden');
+    gameSelectionPage.classList.remove('hidden');
+});
+
+backFromChessBtn.addEventListener('click', () => {
+    chessGamePage.classList.add('hidden');
+    gameSelectionPage.classList.remove('hidden');
+});
+
+if (backFromLudoSetupBtn) {
+    backFromLudoSetupBtn.addEventListener('click', () => {
+        ludoSetupPage.classList.add('hidden');
+        gameSelectionPage.classList.remove('hidden');
+        currentGame = null;
+    });
+}
+
+if (backFromLudoGameBtn) {
+    backFromLudoGameBtn.addEventListener('click', () => {
+        ludoGamePage.classList.add('hidden');
+        ludoSetupPage.classList.remove('hidden');
+    });
+}
+
 logoutBtn2.addEventListener('click', handleLogout);
 logoutBtn3.addEventListener('click', handleLogout);
 logoutBtn4.addEventListener('click', handleLogout);
+if (logoutBtn5) logoutBtn5.addEventListener('click', handleLogout);
+if (logoutBtn6) logoutBtn6.addEventListener('click', handleLogout);
 if (themeToggleBtn) themeToggleBtn.addEventListener('click', toggleTheme);
 
 window.onload = function() {
