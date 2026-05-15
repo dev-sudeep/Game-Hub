@@ -736,7 +736,7 @@ function rollLudoDice(requestedColor) {
 
     const activeColor = getCurrentLudoColor();
     const activeLabel = getCurrentLudoLabel();
-    ludoDiceValue = Math.floor(Math.random() * 6) + 1;
+    ludoDiceValue = getLudoDieRoll();
     ludoLastRollByColor[activeColor] = ludoDiceValue;
 
     if (ludoDiceValue === 6) ludoConsecutiveSixes += 1;
@@ -907,6 +907,26 @@ function buildLudoOccupancyMap() {
 
 function getLudoDiceSymbol(value) {
     return value && LUDO_DICE_SYMBOLS[value] ? LUDO_DICE_SYMBOLS[value] : '🎲';
+}
+
+function getLudoDieRoll() {
+    const cryptoObj = globalThis.crypto;
+    if (cryptoObj && typeof cryptoObj.getRandomValues === 'function') {
+        const range = 6;
+        const maxUint32Space = 0x100000000;
+        const unbiasedLimit = maxUint32Space - (maxUint32Space % range);
+        const randomBuffer = new Uint32Array(1);
+        let randomValue = 0;
+
+        do {
+            cryptoObj.getRandomValues(randomBuffer);
+            randomValue = randomBuffer[0];
+        } while (randomValue >= unbiasedLimit);
+
+        return (randomValue % range) + 1;
+    }
+
+    return Math.floor(Math.random() * 6) + 1;
 }
 
 function renderLudoBoard() {
