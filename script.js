@@ -77,6 +77,7 @@ const LUDO_BASE_ANCHORS = {
 
 const LUDO_SAFE_INDICES = new Set([0, 13, 26, 39]);
 const LUDO_CENTER = [7, 7];
+const LUDO_DICE_SYMBOLS = ['', '⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
 
 let ludoPlayerCount = 0;
 let ludoPlayers = [];
@@ -86,6 +87,7 @@ let ludoDiceValue = null;
 let ludoHasRolled = false;
 let ludoConsecutiveSixes = 0;
 let ludoWinner = null;
+let ludoLastRollByColor = {};
 
 // DOM elements
 const loginPage = document.getElementById('loginPage');
@@ -108,9 +110,7 @@ const chessResetBtn = document.getElementById('chessResetBtn');
 const chessMoveLog = document.getElementById('chessMoveLog');
 
 const ludoStatusDisplay = document.getElementById('ludoStatus');
-const ludoRollBtn = document.getElementById('ludoRollBtn');
 const ludoResetBtn = document.getElementById('ludoResetBtn');
-const ludoDiceValueDisplay = document.getElementById('ludoDiceValue');
 const ludoBoardEl = document.getElementById('ludoBoard');
 const ludoPlayerButtons = document.querySelectorAll('.ludo-player-btn');
 
@@ -685,7 +685,7 @@ function resetLudoState() {
     ludoHasRolled = false;
     ludoConsecutiveSixes = 0;
     ludoWinner = null;
-    if (ludoDiceValueDisplay) ludoDiceValueDisplay.textContent = '-';
+    ludoLastRollByColor = {};
     if (ludoStatusDisplay) ludoStatusDisplay.textContent = 'Select players to start.';
     if (ludoBoardEl) ludoBoardEl.innerHTML = '';
 }
@@ -702,6 +702,10 @@ function initializeLudoState(playerCount) {
     ludoHasRolled = false;
     ludoConsecutiveSixes = 0;
     ludoWinner = null;
+    ludoLastRollByColor = {};
+    ludoPlayers.forEach(color => {
+        ludoLastRollByColor[color] = null;
+    });
 }
 
 function startLudoGame(playerCount) {
@@ -725,21 +729,21 @@ function setLudoStatus(message) {
     if (ludoStatusDisplay) ludoStatusDisplay.textContent = message;
 }
 
-function rollLudoDice() {
+function rollLudoDice(requestedColor) {
     if (!isLoggedIn || currentGame !== 'ludo' || ludoWinner || !ludoPlayers.length) return;
+    if (requestedColor && requestedColor !== getCurrentLudoColor()) return;
     if (ludoHasRolled) return;
 
     const activeColor = getCurrentLudoColor();
     const activeLabel = getCurrentLudoLabel();
     ludoDiceValue = Math.floor(Math.random() * 6) + 1;
-    if (ludoDiceValueDisplay) ludoDiceValueDisplay.textContent = String(ludoDiceValue);
+    ludoLastRollByColor[activeColor] = ludoDiceValue;
 
     if (ludoDiceValue === 6) ludoConsecutiveSixes += 1;
     else ludoConsecutiveSixes = 0;
 
     if (ludoConsecutiveSixes === 3) {
         ludoDiceValue = null;
-        if (ludoDiceValueDisplay) ludoDiceValueDisplay.textContent = '-';
         ludoHasRolled = false;
         ludoConsecutiveSixes = 0;
         setLudoStatus(`${activeLabel} rolled three 6s. Turn forfeited.`);
@@ -830,7 +834,6 @@ function moveLudoToken(color, tokenIndex, diceValue) {
         ludoHasRolled = false;
         ludoDiceValue = null;
         ludoConsecutiveSixes = 0;
-        if (ludoDiceValueDisplay) ludoDiceValueDisplay.textContent = '-';
         setLudoStatus(`${activeLabel} wins the game!`);
         renderLudoBoard();
         return;
@@ -839,7 +842,6 @@ function moveLudoToken(color, tokenIndex, diceValue) {
     const rolledSix = diceValue === 6;
     ludoHasRolled = false;
     ludoDiceValue = null;
-    if (ludoDiceValueDisplay) ludoDiceValueDisplay.textContent = '-';
 
     if (rolledSix) {
         setLudoStatus(`${activeLabel} moved and earned a bonus roll.${captureText}`);
@@ -903,6 +905,10 @@ function buildLudoOccupancyMap() {
     return occupancy;
 }
 
+function getLudoDiceSymbol(value) {
+    return value && LUDO_DICE_SYMBOLS[value] ? LUDO_DICE_SYMBOLS[value] : '🎲';
+}
+
 function renderLudoBoard() {
     if (!ludoBoardEl) return;
     ludoBoardEl.innerHTML = '';
@@ -960,6 +966,18 @@ function renderLudoBoard() {
                 }
 
                 square.appendChild(slots);
+
+                if (isActiveBasePlayer) {
+                    const diceBtn = document.createElement('button');
+                    const shouldHighlightRoll = !ludoWinner && !ludoHasRolled && baseColor === activeColor;
+                    diceBtn.className = `ludo-base-dice ${baseColor}`;
+                    if (shouldHighlightRoll) diceBtn.classList.add('active-turn');
+                    diceBtn.disabled = !shouldHighlightRoll;
+                    diceBtn.textContent = getLudoDiceSymbol(ludoLastRollByColor[baseColor]);
+                    diceBtn.setAttribute('aria-label', `${LUDO_PLAYER_META[baseColor].label} dice`);
+                    diceBtn.addEventListener('click', () => rollLudoDice(baseColor));
+                    square.appendChild(diceBtn);
+                }
             }
 
             if (ludoPathIndexByKey.has(key)) {
@@ -1023,7 +1041,6 @@ function toggleTheme() {
 
 tictactoeResetBtn.addEventListener('click', resetTictactoe);
 chessResetBtn.addEventListener('click', resetChess);
-if (ludoRollBtn) ludoRollBtn.addEventListener('click', rollLudoDice);
 if (ludoResetBtn) ludoResetBtn.addEventListener('click', resetLudoGame);
 
 backFromTictactoeBtn.addEventListener('click', () => {

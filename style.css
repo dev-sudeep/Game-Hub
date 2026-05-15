@@ -832,19 +832,6 @@ body.dark-mode .player-names {
     flex-wrap: wrap;
 }
 
-.ludo-dice {
-    min-width: 64px;
-    height: 44px;
-    border-radius: 8px;
-    background: #1f2937;
-    color: #fff;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.25rem;
-    font-weight: 700;
-}
-
 .ludo-board {
     width: 100%;
     max-width: 650px;
@@ -878,37 +865,39 @@ body.dark-mode .player-names {
 }
 
 .ludo-square.base-block {
+    position: relative;
     border: 2px solid rgba(30, 41, 59, 0.3);
     padding: 16px;
 }
 
-.ludo-square.base-block.red { background: #fff5f5; }
-.ludo-square.base-block.green { background: #f0fff4; }
-.ludo-square.base-block.yellow { background: #fffff0; }
-.ludo-square.base-block.blue { background: #ebf8ff; }
+.ludo-square.base-block.red { background: #fecaca; }
+.ludo-square.base-block.green { background: #bbf7d0; }
+.ludo-square.base-block.yellow { background: #fef08a; }
+.ludo-square.base-block.blue { background: #bfdbfe; }
 
 .ludo-base-slots {
-    width: 100%;
-    height: 100%;
+    width: 66.6667%;
+    height: 66.6667%;
+    margin: auto;
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     grid-template-rows: repeat(2, minmax(0, 1fr));
-    gap: 12px;
+    gap: 0;
 }
 
 .ludo-base-slot {
-    background: rgba(255, 255, 255, 0.82);
+    background: #ffffff;
     border: 2px solid rgba(30, 41, 59, 0.2);
-    border-radius: 10px;
+    border-radius: 2px;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 6px;
+    padding: 2px;
 }
 
 .ludo-base-slot .ludo-token {
-    width: min(100%, 32px);
-    height: min(100%, 32px);
+    width: 52%;
+    height: 52%;
 }
 
 .ludo-token.inactive {
@@ -947,17 +936,44 @@ body.dark-mode .player-names {
 .ludo-token.yellow { background: #d69e2e; }
 .ludo-token.blue { background: #3182ce; }
 
+.ludo-base-dice {
+    position: absolute;
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    border: 2px solid rgba(17, 24, 39, 0.45);
+    background: #f8fafc;
+    color: #0f172a;
+    font-size: 1.6rem;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.18);
+    z-index: 2;
+}
+
+.ludo-base-dice:disabled {
+    cursor: default;
+    opacity: 0.55;
+}
+
+.ludo-base-dice.active-turn {
+    box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.65), 0 3px 10px rgba(15, 23, 42, 0.3);
+    transform: scale(1.05);
+}
+
+.ludo-base-dice.red { right: -10px; bottom: -10px; }
+.ludo-base-dice.green { left: -10px; bottom: -10px; }
+.ludo-base-dice.yellow { left: -10px; top: -10px; }
+.ludo-base-dice.blue { right: -10px; top: -10px; }
+
 .ludo-legend {
     width: 100%;
     text-align: center;
     color: var(--status-text);
     font-size: 0.9rem;
-}
-
-body.dark-mode .ludo-dice {
-    background: #0f172a;
-    color: #e2e8f0;
-    border: 1px solid #475569;
 }
 
 body.dark-mode .ludo-board {
@@ -981,14 +997,24 @@ body.dark-mode .ludo-square.base-block {
     border-color: rgba(203, 213, 225, 0.35);
 }
 
-body.dark-mode .ludo-square.base-block.red { background: #3d1b1b; }
-body.dark-mode .ludo-square.base-block.green { background: #153827; }
-body.dark-mode .ludo-square.base-block.yellow { background: #3f3613; }
-body.dark-mode .ludo-square.base-block.blue { background: #132f47; }
+body.dark-mode .ludo-square.base-block.red { background: #7f1d1d; }
+body.dark-mode .ludo-square.base-block.green { background: #166534; }
+body.dark-mode .ludo-square.base-block.yellow { background: #854d0e; }
+body.dark-mode .ludo-square.base-block.blue { background: #1d4ed8; }
 
 body.dark-mode .ludo-base-slot {
-    background: rgba(15, 23, 42, 0.74);
+    background: #0f172a;
     border-color: rgba(148, 163, 184, 0.35);
+}
+
+body.dark-mode .ludo-base-dice {
+    background: #0f172a;
+    color: #e2e8f0;
+    border-color: rgba(148, 163, 184, 0.65);
+}
+
+body.dark-mode .ludo-base-dice.active-turn {
+    box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.72), 0 3px 12px rgba(15, 23, 42, 0.55);
 }
 
 body.dark-mode .ludo-square.home-lane.red { background: #7f1d1d; }
@@ -1163,6 +1189,13 @@ body.dark-mode .ludo-token.inactive {
     }
 
     .ludo-base-slots {
-        gap: 6px;
+        width: 66.6667%;
+        height: 66.6667%;
+    }
+
+    .ludo-base-dice {
+        width: 34px;
+        height: 34px;
+        font-size: 1.3rem;
     }
 }
