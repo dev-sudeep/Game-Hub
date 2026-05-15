@@ -40,7 +40,7 @@ The chess implementation follows official FIDE-style rules, including:
 
 ---
 
-## 🛠️ Setup & Installation
+## 🛠️ Local Setup & Installation
 
 Because this project uses **Google Identity Services**, the Google Sign-In button requires a secure origin or a local server to appear.
 
@@ -58,6 +58,8 @@ Because this project uses **Google Identity Services**, the Google Sign-In butto
 ---
 
 ## 📝 How to Play
+
+Go to the Deployments for branch `main` and go to the latest github pages deployment or use local live server if locally installed.
 
 ### Chess
 1.  Click a piece to select it (valid pieces will highlight).
