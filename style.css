@@ -842,6 +842,7 @@ body.dark-mode .player-names {
     border: 3px solid #333;
     background: #f8fafc;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    overflow: visible;
 }
 
 .ludo-square {
@@ -964,10 +965,26 @@ body.dark-mode .player-names {
     transform: scale(1.05);
 }
 
-.ludo-base-dice.red { right: -10px; bottom: -10px; }
-.ludo-base-dice.green { left: -10px; bottom: -10px; }
-.ludo-base-dice.yellow { left: -10px; top: -10px; }
-.ludo-base-dice.blue { right: -10px; top: -10px; }
+.ludo-base-dice.red,
+.ludo-base-dice.blue {
+    left: -56px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.ludo-base-dice.green,
+.ludo-base-dice.yellow {
+    right: -56px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.ludo-base-dice.active-turn.red,
+.ludo-base-dice.active-turn.blue,
+.ludo-base-dice.active-turn.green,
+.ludo-base-dice.active-turn.yellow {
+    transform: translateY(-50%) scale(1.05);
+}
 
 .ludo-legend {
     width: 100%;
@@ -1197,5 +1214,15 @@ body.dark-mode .ludo-token.inactive {
         width: 34px;
         height: 34px;
         font-size: 1.3rem;
+    }
+
+    .ludo-base-dice.red,
+    .ludo-base-dice.blue {
+        left: -44px;
+    }
+
+    .ludo-base-dice.green,
+    .ludo-base-dice.yellow {
+        right: -44px;
     }
 }
