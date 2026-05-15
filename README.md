@@ -24,6 +24,11 @@ The chess implementation follows official FIDE-style rules, including:
 * Automatic win detection and victory line highlighting.
 * Responsive design for seamless play on mobile or desktop.
 
+### 🎲 Ludo
+* Choose **2-4 players** before starting.
+* Core rules included: roll 6 to leave base, captures, bonus roll on 6, exact roll to finish.
+* First player to bring all four tokens home wins.
+
 ---
 
 ## 🚀 Tech Stack
@@ -35,7 +40,7 @@ The chess implementation follows official FIDE-style rules, including:
 
 ---
 
-## 🛠️ Setup & Installation
+## 🛠️ Local Setup & Installation
 
 Because this project uses **Google Identity Services**, the Google Sign-In button requires a secure origin or a local server to appear.
 
@@ -54,6 +59,8 @@ Because this project uses **Google Identity Services**, the Google Sign-In butto
 
 ## 📝 How to Play
 
+Go to the Deployments for branch `main` and go to the latest github pages deployment or use local live server if locally installed.
+
 ### Chess
 1.  Click a piece to select it (valid pieces will highlight).
 2.  Click a destination square to execute the move.
@@ -66,6 +73,11 @@ Because this project uses **Google Identity Services**, the Google Sign-In butto
 1.  Click any empty cell to place your mark.
 2.  The game alternates between **X** and **O** automatically.
 3.  Hit **Reset Game** to clear the board at any time.
+
+### Ludo
+1.  Select the number of players (2, 3, or 4).
+2.  Roll dice and move valid tokens; roll **6** to bring tokens out of base.
+3.  Capture opponents on track squares and race all four tokens home.
 
 ---
 
